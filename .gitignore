@@ -1,0 +1,17 @@
+# Build output (Rust / Tauri)
+app/src-tauri/target/
+app/src-tauri/gen/
+
+# Node
+node_modules/
+
+# Partial downloads and test output
+*.fdlpart
+*.part
+*.part.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

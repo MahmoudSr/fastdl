@@ -1,0 +1,73 @@
+# Builds the Windows and macOS apps on GitHub's machines and attaches them, plus the
+# browser extension, to a draft release. Run it by pushing a version tag:
+#   git tag v0.1.0 && git push origin v0.1.0
+# Then review the draft on GitHub and publish it.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  app:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            args: --bundles nsis
+          - os: macos-latest
+            args: --target universal-apple-darwin --bundles dmg
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: Install app dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Run engine unit tests
+        working-directory: app/src-tauri
+        run: cargo test --lib
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: app
+          tagName: ${{ github.ref_name }}
+          releaseName: fastdl ${{ github.ref_name }}
+          releaseBody: |
+            **Windows:** download `fastdl_*_x64-setup.exe` and run it. It isn't code-signed yet, so Windows may say "Windows protected your PC". Click **More info → Run anyway**.
+            **Mac:** download the `.dmg`. It isn't notarized yet, so right-click the app and choose **Open** the first time.
+            **Browser extension:** download `fastdl-extension.zip`, unzip it, then in Chrome open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the folder. Pair it using the key in fastdl → Settings.
+          releaseDraft: true
+          args: ${{ matrix.args }}
+
+  extension:
+    needs: app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zip the extension and attach it to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd extension && zip -r ../fastdl-extension.zip . && cd ..
+          gh release upload "${{ github.ref_name }}" fastdl-extension.zip --clobber

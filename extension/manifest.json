@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "fastdl",
+  "version": "0.1.0",
+  "description": "Send your downloads to the fastdl app for faster multi-connection downloading.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1aM2xRT8RwXlg6+I+b+7orNWRcOM0DMbLMzPGBxeAsC+TwHs9qn4FmA1jNJ7Vk26qxdBC1wTvd1dMr2LeP6zx/hTdjaMhXdw0q48E4k7nkOemnazSUl3lgjgBYtuSuCZp67Yssq2TdDQ2wzc/YAJUTZm1ryG24DpIAm+ylPyePkyQ3X9N7d3Azw5yluplMzOiEwQO7ykT76WOeywDbix+Q2cqcTfCh1RI7CrzaBdtLcoxfdyaw0bFeuzvlGrZM2fKbc2b8IB94A/AHVfB58fe5jLtvCIpVzA0+3mgzeTjoHDtg6Ag/FkJlTEIh7a3iYPdQSEW2PHJzHoyVxvrABDHwIDAQAB",
+  "permissions": [
+    "downloads",
+    "contextMenus",
+    "storage"
+  ],
+  "optional_permissions": [
+    "cookies"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:17385/*"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "fastdl",
+    "default_icon": {
+      "32": "icons/32.png",
+      "64": "icons/64.png"
+    }
+  },
+  "icons": {
+    "32": "icons/32.png",
+    "64": "icons/64.png",
+    "128": "icons/128.png"
+  }
+}

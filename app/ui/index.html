@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>fastdl</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></symbol>
+      <symbol id="i-all" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+      <symbol id="i-active" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+      <symbol id="i-queue" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3v.01"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></symbol>
+      <symbol id="i-retry" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15m0 5v-5h5"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+      <symbol id="i-mini" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="11" y="12" width="7" height="5" rx="1"/></symbol>
+      <symbol id="i-expand" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="t-video" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></symbol>
+      <symbol id="t-audio" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+      <symbol id="t-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+      <symbol id="t-app" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+      <symbol id="t-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></symbol>
+      <symbol id="t-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></symbol>
+      <symbol id="t-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <span class="logo"><svg><use href="#i-down"/></svg></span>
+        <span>fastdl</span>
+      </div>
+      <nav aria-label="Filter by status">
+        <button class="nav on" data-status="all"><svg><use href="#i-all"/></svg>All<span class="count" data-count="all"></span></button>
+        <button class="nav" data-status="downloading"><svg><use href="#i-active"/></svg>Active<span class="count" data-count="downloading"></span></button>
+        <button class="nav" data-status="waiting"><svg><use href="#i-queue"/></svg>Queued &amp; paused<span class="count" data-count="waiting"></span></button>
+        <button class="nav" data-status="completed"><svg><use href="#i-check"/></svg>Completed<span class="count" data-count="completed"></span></button>
+        <button class="nav" data-status="failed"><svg><use href="#i-alert"/></svg>Failed<span class="count" data-count="failed"></span></button>
+      </nav>
+      <div class="side-label">Type</div>
+      <nav aria-label="Filter by type" id="types"></nav>
+      <div class="side-foot">
+        <button class="nav" id="open-settings"><svg><use href="#i-gear"/></svg>Settings</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <form class="addbar" id="add-form" autocomplete="off">
+        <label class="sr" for="url">Download link</label>
+        <input id="url" type="url" placeholder="Paste a download link…  (Ctrl+V anywhere)" required spellcheck="false">
+        <button class="btn primary" type="submit"><svg><use href="#i-down"/></svg>Download</button>
+      </form>
+      <p class="form-error" id="add-error" role="alert" hidden></p>
+
+      <div class="toolbar">
+        <h1 id="view-title">All downloads</h1>
+        <div class="search">
+          <svg><use href="#i-search"/></svg>
+          <label class="sr" for="q">Search downloads</label>
+          <input id="q" type="search" placeholder="Search">
+        </div>
+        <button class="btn ghost" id="clear-done">Clear completed</button>
+        <button class="icon-btn" id="mini-on" aria-label="Mini view (Ctrl+M)" title="Mini view (Ctrl+M)"><svg><use href="#i-mini"/></svg></button>
+      </div>
+
+      <div class="list" id="list" role="list"></div>
+      <div class="empty" id="empty" hidden>
+        <div class="empty-icon"><svg><use href="#i-down"/></svg></div>
+        <p class="empty-title">No downloads here</p>
+        <p class="empty-sub">Paste a link above to start. fastdl splits files into pieces and downloads them in parallel.</p>
+      </div>
+
+      <footer class="status">
+        <span><svg><use href="#i-down"/></svg><b id="total-speed">0 B/s</b></span>
+        <span id="active-count">0 active</span>
+        <span class="spacer"></span>
+        <span id="limit-label"></span>
+      </footer>
+    </main>
+  </div>
+
+  <div class="mini" id="mini" hidden>
+    <div class="mini-bar" data-tauri-drag-region>
+      <span class="logo sm" data-tauri-drag-region><svg data-tauri-drag-region><use href="#i-down"/></svg></span>
+      <b class="tnum" id="mini-speed" data-tauri-drag-region>0 B/s</b>
+      <span class="mini-count" id="mini-count" data-tauri-drag-region></span>
+      <span class="spacer" data-tauri-drag-region></span>
+      <button class="icon-btn" id="mini-min" aria-label="Minimize" title="Minimize"><svg><use href="#i-minus"/></svg></button>
+      <button class="icon-btn" id="mini-off" aria-label="Full view (Ctrl+M)" title="Full view (Ctrl+M)"><svg><use href="#i-expand"/></svg></button>
+    </div>
+    <div class="mini-list" id="mini-list"></div>
+  </div>
+
+  <dialog id="settings" aria-labelledby="settings-title">
+    <form method="dialog" id="settings-form">
+      <h2 id="settings-title">Settings</h2>
+      <div class="field">
+        <label for="s-conns">Connections per download <output id="s-conns-out"></output></label>
+        <input id="s-conns" type="range" min="1" max="32">
+        <p class="hint" id="s-conns-hint">8 is safe for almost every server. Higher can be faster, but some servers block you for it.</p>
+      </div>
+      <div class="field">
+        <label for="s-active">Downloads at the same time</label>
+        <input id="s-active" type="number" min="1" max="10">
+      </div>
+      <div class="field">
+        <label for="s-limit">Speed limit (KB/s)</label>
+        <input id="s-limit" type="number" min="0" step="100">
+        <p class="hint">0 means no limit.</p>
+      </div>
+      <div class="field">
+        <label for="s-dir">Save to</label>
+        <div class="row">
+          <input id="s-dir" type="text" readonly>
+          <button type="button" class="btn" id="s-browse"><svg><use href="#i-folder"/></svg>Browse</button>
+        </div>
+      </div>
+      <label class="check">
+        <input type="checkbox" id="s-ask"> Ask before starting downloads from the browser
+      </label>
+      <div class="field">
+        <label for="s-key">Browser extension key</label>
+        <div class="row">
+          <input id="s-key" type="text" readonly class="mono">
+          <button type="button" class="btn" id="s-copy-key">Copy</button>
+        </div>
+        <p class="hint" id="s-key-hint">Paste this into the fastdl extension once to pair it. <button type="button" class="link" id="s-new-key">Make a new key</button></p>
+      </div>
+      <div class="field">
+        <label for="s-theme">Theme</label>
+        <select id="s-theme">
+          <option value="system">Match Windows</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn primary" value="save" id="s-save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="new-dl" aria-labelledby="nd-title">
+    <form method="dialog" id="nd-form">
+      <div class="nd-head">
+        <div class="ftype"><svg><use id="nd-icon" href="#t-file"/></svg></div>
+        <div class="nd-head-text">
+          <h2 id="nd-title">New download</h2>
+          <p class="nd-from" id="nd-from"></p>
+        </div>
+      </div>
+      <div class="field">
+        <label for="nd-name">File name</label>
+        <input id="nd-name" type="text" required spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="nd-dir">Save to</label>
+        <div class="row">
+          <input id="nd-dir" type="text" readonly>
+          <button type="button" class="btn" id="nd-browse"><svg><use href="#i-folder"/></svg>Browse</button>
+        </div>
+      </div>
+      <p class="nd-info" id="nd-info" aria-live="polite"></p>
+      <p class="form-error" id="nd-error" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn" value="later">Later</button>
+        <button class="btn primary" value="start" id="nd-start"><svg><use href="#i-down"/></svg>Download</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-remove" aria-labelledby="rm-title">
+    <form method="dialog">
+      <h2 id="rm-title">Remove download?</h2>
+      <p class="rm-name" id="rm-name"></p>
+      <label class="check" id="rm-delete-wrap"><input type="checkbox" id="rm-delete"> Also delete the file from disk</label>
+      <div class="actions">
+        <button class="btn ghost" value="cancel">Cancel</button>
+        <button class="btn danger" value="ok">Remove</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

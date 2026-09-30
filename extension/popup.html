@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>fastdl</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/64.png" alt="" width="28" height="28">
+    <h1>fastdl</h1>
+    <span class="status" id="status" role="status"><span class="dot"></span><span id="status-text">Checking…</span></span>
+  </header>
+
+  <form class="pair" id="pair" hidden>
+    <label for="key"><b>Pair with the fastdl app</b>
+      <small>Open fastdl → Settings → Browser extension, copy the key and paste it here. You only do this once.</small>
+    </label>
+    <div class="pair-row">
+      <input id="key" type="text" placeholder="xxxx-xxxx-xxxx-…" autocomplete="off" spellcheck="false">
+      <button type="submit">Pair</button>
+    </div>
+    <p class="error" id="pair-error" role="alert" hidden></p>
+  </form>
+
+  <label class="row">
+    <span>
+      <b>Send downloads to fastdl</b>
+      <small>When off, Chrome downloads as usual.</small>
+    </span>
+    <input type="checkbox" class="switch" id="enabled">
+  </label>
+
+  <label class="row">
+    <span>
+      <b>Include login cookies</b>
+      <small>For sites you're signed into. Cookies go only to fastdl on this PC, never saved to disk.</small>
+    </span>
+    <input type="checkbox" class="switch" id="cookies">
+  </label>
+
+  <p class="foot"><span id="foot">Tip: right-click any link → Download with fastdl.</span> <button type="button" class="link" id="unpair" hidden>Unpair</button></p>
+  <script src="common.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
