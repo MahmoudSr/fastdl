@@ -30,7 +30,21 @@ async function refreshStatus() {
   }
 }
 
+// Explain the last download that stayed in Chrome (the "!" on the icon), then clear it.
+async function showLastFallback() {
+  const { lastFallback: f } = await chrome.storage.local.get('lastFallback');
+  if (!f) return;
+  let host = '';
+  try { host = new URL(f.url).host; } catch {}
+  const mins = Math.round((Date.now() - f.time) / 60000);
+  const when = mins < 1 ? 'just now' : mins < 60 ? `${mins} min ago` : new Date(f.time).toLocaleString();
+  $('notice').textContent = `A download${host ? ` from ${host}` : ''} went to Chrome (${when}): ${f.reason}`;
+  $('notice').hidden = false;
+  await chrome.storage.local.remove('lastFallback');
+}
+
 (async () => {
+  showLastFallback();
   const s = await chrome.storage.local.get({ enabled: true, cookies: false });
   $('enabled').checked = s.enabled;
   $('cookies').checked = s.cookies && await chrome.permissions.contains(COOKIE_PERMS);
