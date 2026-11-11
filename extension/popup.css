@@ -46,7 +46,12 @@ small { color: var(--muted); font-size: 12px; }
 .pair-row { display: flex; gap: 6px; }
 .pair-row input { flex: 1; min-width: 0; height: 32px; padding: 0 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-2); color: var(--text); font: 12px ui-monospace, Consolas, monospace; outline: none; }
 .pair-row input:focus { border-color: var(--primary); }
-.pair-row button { height: 32px; padding: 0 14px; border: 0; border-radius: 7px; background: var(--primary); color: var(--bg); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.pair > small { color: var(--muted); }
+.pair-row { align-items: center; }
+.pair-row .link { margin-left: auto; }
+.code { display: flex; align-items: baseline; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: var(--surface-2); color: var(--muted); font-size: 12px; }
+.code output { color: var(--primary); font: 700 20px ui-monospace, Consolas, monospace; letter-spacing: .2em; }
+.pair-row button:not(.link) { height: 32px; padding: 0 14px; border: 0; border-radius: 7px; background: var(--primary); color: var(--bg); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .pair-row button:focus-visible, .link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .error { color: var(--off); font-size: 12px; }
 .notice { margin-bottom: 10px; padding: 8px 10px; border-radius: 8px; background: var(--surface-2); color: var(--text); font-size: 12px; border-left: 3px solid var(--off); }

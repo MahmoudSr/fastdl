@@ -10,6 +10,11 @@ node_modules/
 *.part
 *.part.json
 
+# Extension build output, and never the extension's private signing key
+dist/
+*.pem
+*.crx
+
 # OS / editor
 .DS_Store
 Thumbs.db

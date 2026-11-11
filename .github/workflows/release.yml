@@ -42,9 +42,13 @@ jobs:
         working-directory: app
         run: npm ci
 
-      - name: Run engine unit tests
+      - name: Run unit tests
         working-directory: app/src-tauri
         run: cargo test --lib
+
+      - name: Test the extension against the app's endpoint (end to end)
+        if: matrix.os == 'windows-latest'
+        run: node test/extension-test.js
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -55,19 +59,59 @@ jobs:
           releaseName: fastdl ${{ github.ref_name }}
           releaseBody: |
             **Windows:** download `fastdl_*_x64-setup.exe` and run it. It isn't code-signed yet, so Windows may say "Windows protected your PC". Click **More info → Run anyway**.
+            **Windows, portable:** download `fastdl_*_x64-portable.zip` and unzip it anywhere, a USB stick too. Settings stay in the `data` folder next to `fastdl.exe`, nothing goes to AppData.
             **Mac:** download the `.dmg`. It isn't notarized yet, so right-click the app and choose **Open** the first time.
-            **Browser extension:** download `fastdl-extension.zip`, unzip it, then in Chrome open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the folder. Pair it using the key in fastdl → Settings.
+
+            **Browser extension**
+            - **Ungoogled Chromium and other Chromium builds:** download `fastdl-extension.crx`, open `chrome://extensions`, turn on **Developer mode** and drag the file onto the page.
+            - **Chrome, Edge, and any browser that refuses the .crx:** download `fastdl-extension.zip` and unzip it. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the folder. (Chrome and Edge only accept .crx files from their own stores.)
+            - Then click the fastdl extension icon → **Connect**, and click **Allow** in fastdl.
           releaseDraft: true
           args: ${{ matrix.args }}
 
+      - name: Attach the portable build
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Get-Content app/src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          $dir = New-Item -ItemType Directory -Force portable/fastdl
+          Copy-Item app/src-tauri/target/release/fastdl.exe, app/portable/fastdl.ini $dir
+          $zip = "fastdl_${version}_x64-portable.zip"
+          Compress-Archive -Path $dir -DestinationPath $zip
+          gh release upload "${{ github.ref_name }}" $zip --clobber
+
+  # The .crx must be signed with the extension's original private key, or its ID changes and the
+  # app refuses it. The key lives only in the EXTENSION_PEM secret (Settings → Secrets and variables
+  # → Actions), never in the repository. The packer checks the key matches manifest.json "key" and
+  # bridge.rs, and verifies the .crx it writes, so a wrong key fails the job instead of shipping.
   extension:
     needs: app
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Zip the extension and attach it to the release
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test the extension packer
+        run: node test/pack-extension-test.js
+
+      - name: Build the extension zip and signed .crx
+        env:
+          FASTDL_EXTENSION_PEM: ${{ secrets.EXTENSION_PEM }}
+        run: |
+          if [ -n "$FASTDL_EXTENSION_PEM" ]; then
+            node scripts/pack-extension.js --out dist --require-key
+            node scripts/pack-extension.js --verify dist/fastdl-extension.crx
+          else
+            echo "::warning::The EXTENSION_PEM secret isn't set, so this release has no signed .crx (zip only)."
+            node scripts/pack-extension.js --out dist
+          fi
+
+      - name: Attach them to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd extension && zip -r ../fastdl-extension.zip . && cd ..
-          gh release upload "${{ github.ref_name }}" fastdl-extension.zip --clobber
+        run: gh release upload "${{ github.ref_name }}" dist/* --clobber

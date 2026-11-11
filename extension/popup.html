@@ -14,9 +14,20 @@
 
   <p class="notice" id="notice" role="status" hidden></p>
 
+  <section class="pair" id="connect" aria-labelledby="connect-title" hidden>
+    <b id="connect-title">Connect to the fastdl app</b>
+    <small id="connect-text">Click Connect, then Allow in the fastdl window. You only do this once.</small>
+    <div class="code" id="connect-code" hidden><span>fastdl shows the same code</span><output id="code"></output></div>
+    <p class="error" id="connect-error" role="alert" hidden></p>
+    <div class="pair-row">
+      <button type="button" id="connect-btn">Connect</button>
+      <button type="button" class="link" id="show-key">Paste a key instead</button>
+    </div>
+  </section>
+
   <form class="pair" id="pair" hidden>
-    <label for="key"><b>Pair with the fastdl app</b>
-      <small>Open fastdl → Settings → Browser extension, copy the key and paste it here. You only do this once.</small>
+    <label for="key"><b>Pair with a key</b>
+      <small>In fastdl open Settings → Browser extension, copy the key and paste it here.</small>
     </label>
     <div class="pair-row">
       <input id="key" type="text" placeholder="xxxx-xxxx-xxxx-…" autocomplete="off" spellcheck="false">

@@ -74,6 +74,13 @@
         <button class="icon-btn" id="mini-on" aria-label="Mini view (Ctrl+M)" title="Mini view (Ctrl+M)"><svg><use href="#i-mini"/></svg></button>
       </div>
 
+      <div class="sel-bar" id="sel-bar" role="toolbar" aria-label="Selected downloads" hidden>
+        <span id="sel-count" aria-live="polite"></span>
+        <button class="btn ghost" id="sel-all">Select all<kbd>Ctrl+A</kbd></button>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="sel-clear">Cancel<kbd>Esc</kbd></button>
+        <button class="btn danger" id="sel-remove">Remove<kbd>Del</kbd></button>
+      </div>
       <div class="list" id="list" role="list"></div>
       <div class="empty" id="empty" hidden>
         <div class="empty-icon"><svg><use href="#i-down"/></svg></div>
@@ -129,13 +136,30 @@
       <label class="check">
         <input type="checkbox" id="s-ask"> Ask before starting downloads from the browser
       </label>
+      <label class="check">
+        <input type="checkbox" id="s-tray"> Keep running in the tray when I close the window
+      </label>
+      <div class="check-group">
+        <label class="check">
+          <input type="checkbox" id="s-autostart"> Start fastdl when I sign in
+        </label>
+        <p class="hint" id="s-autostart-hint">fastdl starts in the tray, so your browser's downloads always reach it.</p>
+      </div>
       <div class="field">
         <label for="s-key">Browser extension key</label>
         <div class="row">
           <input id="s-key" type="text" readonly class="mono">
           <button type="button" class="btn" id="s-copy-key">Copy</button>
         </div>
-        <p class="hint" id="s-key-hint">Paste this into the fastdl extension once to pair it. <button type="button" class="link" id="s-new-key">Make a new key</button></p>
+        <p class="hint" id="s-key-hint">To connect, click <b>Connect</b> in the fastdl browser extension and allow it here. Or paste this key into the extension. <button type="button" class="link" id="s-new-key">Make a new key</button></p>
+      </div>
+      <div class="field">
+        <label for="s-data">Settings are saved in <span class="tag" id="s-mode"></span></label>
+        <div class="row">
+          <input id="s-data" type="text" readonly class="mono">
+          <button type="button" class="btn" id="s-open-data"><svg><use href="#i-folder"/></svg>Open</button>
+        </div>
+        <p class="hint" id="s-data-hint"></p>
       </div>
       <div class="field">
         <label for="s-theme">Theme</label>
@@ -186,10 +210,35 @@
     <form method="dialog">
       <h2 id="rm-title">Remove download?</h2>
       <p class="rm-name" id="rm-name"></p>
-      <label class="check" id="rm-delete-wrap"><input type="checkbox" id="rm-delete"> Also delete the file from disk</label>
+      <label class="check" id="rm-delete-wrap"><input type="checkbox" id="rm-delete"> <span id="rm-delete-text">Also delete the file from disk</span></label>
       <div class="actions">
-        <button class="btn ghost" value="cancel">Cancel</button>
+        <button class="btn ghost" value="cancel" autofocus>Cancel</button>
         <button class="btn danger" value="ok">Remove</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="pair-req" aria-labelledby="pr-title" aria-describedby="pr-text">
+    <form method="dialog">
+      <h2 id="pr-title">Allow this browser to connect?</h2>
+      <p id="pr-text"><b id="pr-browser"></b> wants to send its downloads to fastdl.</p>
+      <div class="pr-code"><span>Code</span><output id="pr-code" class="mono"></output></div>
+      <p class="hint">The fastdl extension shows the same code (click its icon to see it). If the codes don't match, or you didn't just install the extension or click Connect, choose Don't allow.</p>
+      <div class="actions">
+        <button class="btn ghost" value="deny">Don't allow</button>
+        <button class="btn primary" value="allow">Allow</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="tray-hint" aria-labelledby="th-title">
+    <form method="dialog">
+      <h2 id="th-title">fastdl keeps running in the tray</h2>
+      <p>That way, downloads from your browser still go to fastdl while this window is closed.</p>
+      <p class="hint">Click the fastdl icon next to the clock to open it again (it may be under the <b>^</b> arrow). Right-click it to quit. You can turn this off in Settings.</p>
+      <div class="actions">
+        <button class="btn ghost" value="quit">Quit fastdl</button>
+        <button class="btn primary" value="ok">OK</button>
       </div>
     </form>
   </dialog>

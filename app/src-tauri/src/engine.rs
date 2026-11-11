@@ -3,7 +3,7 @@
 
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 use std::fs::{File, OpenOptions};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering::Relaxed};
@@ -42,6 +42,12 @@ pub struct Settings {
     /// Show a confirm window for downloads sent from the browser.
     #[serde(default = "yes")]
     pub ask_before_download: bool,
+    /// Closing the window keeps fastdl running in the system tray, so browser downloads still reach it.
+    #[serde(default = "yes")]
+    pub close_to_tray: bool,
+    /// The one-time "fastdl keeps running in the tray" note has been shown.
+    #[serde(default)]
+    pub tray_hint_shown: bool,
 }
 
 fn yes() -> bool { true }
@@ -362,7 +368,10 @@ impl Engine {
         let saved: Option<Saved> = std::fs::read(&data_file).ok().and_then(|b| serde_json::from_slice(&b).ok());
         let (mut settings, mut items, next_id) = match saved {
             Some(s) => (s.settings, s.items, s.next_id),
-            None => (Settings { connections: 8, max_active: 3, dir: default_dir, speed_limit_kbps: 0, theme: "system".into(), ask_before_download: true }, vec![], 1),
+            None => (Settings {
+                connections: 8, max_active: 3, dir: default_dir, speed_limit_kbps: 0, theme: "system".into(),
+                ask_before_download: true, close_to_tray: true, tray_hint_shown: false,
+            }, vec![], 1),
         };
         settings = clamp_settings(settings);
         // Anything that was running when the app closed comes back paused.
@@ -425,6 +434,11 @@ impl Engine {
     fn send<T: Serialize>(&self, ev: &str, v: &T) { (self.emit)(ev, serde_json::to_value(v).unwrap()); }
 
     fn emit_item(&self, r: &Record) { self.send("item", &dto(r)); }
+
+    pub fn settings(&self) -> Settings { self.inner.lock().unwrap().settings.clone() }
+
+    /// Save everything now, e.g. right before quitting, so downloads resume where they stopped.
+    pub fn flush(&self) { self.save(); }
 
     pub fn state(&self) -> StateDto {
         let inner = self.inner.lock().unwrap();
@@ -529,35 +543,42 @@ impl Engine {
         self.schedule();
     }
 
-    pub fn remove(self: &Arc<Self>, id: u64, delete_file: bool) {
-        let mut inner = self.inner.lock().unwrap();
-        if let Some(idx) = inner.items.iter().position(|i| i.rec.id == id) {
-            let it = inner.items.remove(idx);
+    pub fn remove(self: &Arc<Self>, id: u64, delete_file: bool) { self.remove_many(&[id], delete_file); }
+
+    /// Remove downloads from the list. A running one is stopped; partial files are always
+    /// deleted (they're useless once the item is gone); finished files only if `delete_files`.
+    /// However many there are, the list is saved once and the UI gets one "removed" event
+    /// (an array of ids), so clearing thousands of downloads stays instant.
+    pub fn remove_many(self: &Arc<Self>, ids: &[u64], delete_files: bool) {
+        let wanted: HashSet<u64> = ids.iter().copied().collect();
+        let gone: Vec<Item> = {
+            let mut inner = self.inner.lock().unwrap();
+            let (gone, kept) = std::mem::take(&mut inner.items).into_iter().partition(|i| wanted.contains(&i.rec.id));
+            inner.items = kept;
+            gone
+        };
+        if gone.is_empty() { return; }
+        // Files are deleted outside the lock, so a long list doesn't stall running downloads.
+        let removed: Vec<u64> = gone.into_iter().map(|it| {
             match it.job {
-                // The partial file is useless once the item is gone.
                 Some(j) => { j.delete_files.store(true, Relaxed); j.cancel.cancel(); }
                 None => {
                     let dir = Path::new(&it.rec.dir);
                     let _ = std::fs::remove_file(dir.join(format!("{}.{PART_EXT}", it.rec.name)));
-                    if delete_file && it.rec.status == Status::Completed { let _ = std::fs::remove_file(dir.join(&it.rec.name)); }
+                    if delete_files && it.rec.status == Status::Completed { let _ = std::fs::remove_file(dir.join(&it.rec.name)); }
                 }
             }
-            self.send("removed", &id);
-        }
-        drop(inner);
+            it.rec.id
+        }).collect();
+        self.send("removed", &removed);
         self.save();
         self.schedule();
     }
 
-    pub fn clear_completed(&self) {
-        let ids: Vec<u64> = {
-            let mut inner = self.inner.lock().unwrap();
-            let ids = inner.items.iter().filter(|i| i.rec.status == Status::Completed).map(|i| i.rec.id).collect();
-            inner.items.retain(|i| i.rec.status != Status::Completed);
-            ids
-        };
-        for id in ids { self.send("removed", &id); }
-        self.save();
+    pub fn clear_completed(self: &Arc<Self>) {
+        let ids: Vec<u64> = self.inner.lock().unwrap().items.iter()
+            .filter(|i| i.rec.status == Status::Completed).map(|i| i.rec.id).collect();
+        self.remove_many(&ids, false);
     }
 
     pub fn set_settings(self: &Arc<Self>, s: Settings) {
@@ -913,6 +934,47 @@ impl Worker {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn remove_many_removes_only_those_and_saves_once() {
+        let dir = std::env::temp_dir().join(format!("fastdl-remove-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let ev = events.clone();
+        let emit: Emit = Box::new(move |name, v| if name == "removed" { ev.lock().unwrap().push(v) });
+        let engine = Engine::new(emit, dir.join("state"), dir.to_string_lossy().into_owned());
+        let mut s = engine.settings();
+        s.max_active = 1;
+        s.ask_before_download = true;
+        engine.set_settings(s);
+        // Pending downloads (waiting for confirmation) never start, so nothing touches the network.
+        let ids: Vec<u64> = (0..4).map(|n| {
+            let dto = engine.add(format!("http://127.0.0.1:9/file{n}.bin"), vec![], true).unwrap();
+            serde_json::to_value(dto).unwrap()["id"].as_u64().unwrap()
+        }).collect();
+
+        engine.remove_many(&[ids[0], ids[2], 999], false);
+
+        let left: Vec<u64> = serde_json::to_value(engine.state()).unwrap()["items"].as_array().unwrap()
+            .iter().map(|i| i["id"].as_u64().unwrap()).collect();
+        assert_eq!(left, vec![ids[1], ids[3]]);
+        assert_eq!(*events.lock().unwrap(), vec![serde_json::json!([ids[0], ids[2]])], "one event for the whole batch");
+        let saved: serde_json::Value = serde_json::from_slice(&std::fs::read(dir.join("state").join("downloads.json")).unwrap()).unwrap();
+        assert_eq!(saved["items"].as_array().unwrap().len(), 2, "the saved list matches");
+
+        engine.remove_many(&[], false);
+        assert_eq!(events.lock().unwrap().len(), 1, "removing nothing sends nothing");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn settings_from_0_1_still_load() {
+        // downloads.json written by fastdl 0.1.x has no tray fields.
+        let old = r#"{"connections":8,"maxActive":3,"dir":"C:\\Downloads","speedLimitKbps":0,"theme":"system","askBeforeDownload":true}"#;
+        let s: Settings = serde_json::from_str(old).unwrap();
+        assert!(s.close_to_tray, "the tray is on by default");
+        assert!(!s.tray_hint_shown, "the tray note is shown once");
+    }
 
     #[test]
     fn names_cannot_escape_the_folder() {

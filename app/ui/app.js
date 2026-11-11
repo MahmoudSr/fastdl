@@ -129,6 +129,10 @@ function renderList() {
   list.replaceChildren(frag);
   $('#empty').hidden = visible.length > 0;
   list.hidden = visible.length === 0;
+  // Never keep hidden downloads selected: Del must only remove what you can see.
+  const shown = new Set(visible.map(i => i.id));
+  for (const id of selected) if (!shown.has(id)) selected.delete(id);
+  renderSelection();
   renderCounts();
 }
 
@@ -167,12 +171,12 @@ function applyTheme() {
 }
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, ms = 2600) {
   const t = $('#toast');
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  toastTimer = setTimeout(() => t.classList.remove('show'), ms);
 }
 
 // ---------- Actions ----------
@@ -190,33 +194,97 @@ async function addUrl(url) {
   }
 }
 
-let pendingRemove = null;
+// ---------- Selecting downloads: click, Ctrl+click, Shift+click, Ctrl+A; Del removes ----------
+const selected = new Set();
+let anchor = null; // the row a Shift+click range starts from
+
+const visibleIds = () => [...list.children].map(el => Number(el.dataset.id));
+
+function renderSelection() {
+  for (const [id, el] of rows) el.classList.toggle('selected', selected.has(id));
+  $('#sel-bar').hidden = selected.size === 0;
+  $('#sel-count').textContent = `${selected.size} selected`;
+}
+
+function setSelection(ids) {
+  selected.clear();
+  for (const id of ids) selected.add(id);
+  renderSelection();
+}
+
+list.addEventListener('mousedown', e => { if (e.shiftKey) e.preventDefault(); }); // no text selection on Shift+click
+
+list.addEventListener('click', e => {
+  if (e.target.closest('[data-act]')) return; // a row button, handled below
+  const row = e.target.closest('.item');
+  if (!row) { setSelection([]); return; } // empty space clears the selection
+  const id = Number(row.dataset.id);
+  if (e.shiftKey && anchor != null && visibleIds().includes(anchor)) {
+    const ids = visibleIds();
+    const [a, b] = [ids.indexOf(anchor), ids.indexOf(id)].sort((x, y) => x - y);
+    setSelection([...(e.ctrlKey ? selected : []), ...ids.slice(a, b + 1)]);
+    return;
+  }
+  if (e.ctrlKey || e.metaKey) {
+    if (selected.has(id)) selected.delete(id); else selected.add(id);
+    renderSelection();
+  } else {
+    setSelection([id]);
+  }
+  anchor = id;
+});
+
+// Double-click a finished download to open it.
+list.addEventListener('dblclick', e => {
+  const row = e.target.closest('.item');
+  if (!row || e.target.closest('[data-act]')) return;
+  const id = Number(row.dataset.id);
+  if (items.get(id)?.status === 'completed') api.invoke('open_file', { id }).catch(err => toast(String(err)));
+});
+
+$('#sel-all').addEventListener('click', () => setSelection(visibleIds()));
+$('#sel-clear').addEventListener('click', () => setSelection([]));
+$('#sel-remove').addEventListener('click', () => confirmRemove([...selected]));
+
+// ---------- Removing (one row's X, or the selection) ----------
+let pendingRemove = [];
+
+function confirmRemove(ids) {
+  const its = ids.map(id => items.get(id)).filter(Boolean);
+  if (!its.length) return;
+  pendingRemove = its.map(i => i.id);
+  const one = its.length === 1;
+  const finished = its.filter(i => i.status === 'completed').length;
+  $('#rm-title').textContent = one ? 'Remove download?' : `Remove ${its.length} downloads?`;
+  $('#rm-name').textContent = one ? its[0].name
+    : its.slice(0, 3).map(i => i.name).join(', ') + (its.length > 3 ? ` and ${its.length - 3} more` : '');
+  $('#rm-delete').checked = false;
+  $('#rm-delete-wrap').hidden = finished === 0;
+  $('#rm-delete-text').textContent = one ? 'Also delete the file from disk'
+    : `Also delete the ${finished} finished file${finished > 1 ? 's' : ''} from disk`;
+  $('#confirm-remove').showModal();
+}
+
 list.addEventListener('click', async e => {
   const btn = e.target.closest('[data-act]');
   if (!btn) return;
   const id = Number(btn.closest('.item').dataset.id);
-  const it = items.get(id);
   const act = btn.dataset.act;
   try {
     if (act === 'pause') await api.invoke('pause', { id });
     else if (act === 'resume') await api.invoke('resume', { id });
     else if (act === 'open') await api.invoke('open_file', { id });
     else if (act === 'folder') await api.invoke('show_in_folder', { id });
-    else if (act === 'remove') {
-      pendingRemove = id;
-      $('#rm-name').textContent = it.name;
-      $('#rm-delete').checked = false;
-      $('#rm-delete-wrap').hidden = it.status !== 'completed';
-      $('#confirm-remove').showModal();
-    }
+    else if (act === 'remove') confirmRemove([id]);
   } catch (err) { toast(String(err)); }
 });
 
 $('#confirm-remove').addEventListener('close', async () => {
-  if ($('#confirm-remove').returnValue === 'ok' && pendingRemove != null) {
-    await api.invoke('remove', { id: pendingRemove, deleteFile: $('#rm-delete').checked });
-  }
-  pendingRemove = null;
+  const ids = pendingRemove;
+  pendingRemove = [];
+  if ($('#confirm-remove').returnValue !== 'ok' || !ids.length) return;
+  try { await api.invoke('remove_many', { ids, deleteFiles: $('#rm-delete').checked }); }
+  catch (err) { toast(String(err)); }
 });
 
 $('#add-form').addEventListener('submit', e => { e.preventDefault(); addUrl($('#url').value); });
@@ -229,6 +297,11 @@ document.addEventListener('paste', e => {
 });
 
 document.addEventListener('keydown', e => {
+  // Selection keys only act on the list: not while typing, in a dialog, or in the mini view.
+  const free = !e.target.closest('input, textarea, select') && !document.querySelector('dialog[open]') && !mini;
+  if (free && e.ctrlKey && e.key.toLowerCase() === 'a') { e.preventDefault(); setSelection(visibleIds()); return; }
+  if (free && e.key === 'Delete' && selected.size) { e.preventDefault(); confirmRemove([...selected]); return; }
+  if (free && e.key === 'Escape' && selected.size) { setSelection([]); return; }
   if (e.ctrlKey && e.key.toLowerCase() === 'l') { e.preventDefault(); $('#url').focus(); }
   if (e.ctrlKey && e.key.toLowerCase() === 'f') { e.preventDefault(); $('#q').focus(); }
   if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); setMini(!mini); }
@@ -269,8 +342,11 @@ $('#open-settings').addEventListener('click', () => {
   $('#s-dir').value = settings.dir;
   $('#s-theme').value = settings.theme;
   $('#s-ask').checked = settings.askBeforeDownload;
+  $('#s-tray').checked = settings.closeToTray;
+  loadAutostart();
   updateConnHint();
   loadExtensionInfo();
+  loadStorageInfo();
   sd.showModal();
 });
 $('#s-conns').addEventListener('input', updateConnHint);
@@ -283,6 +359,28 @@ async function loadExtensionInfo() {
     $('#s-key-hint').classList.add('warn');
   }
 }
+// "Start fastdl when I sign in" lives in Windows (not in settings), so read it fresh each time.
+let autostartWas = false;
+async function loadAutostart() {
+  const info = await api.invoke('autostart_info').catch(() => ({ available: false, enabled: false }));
+  autostartWas = info.enabled;
+  $('#s-autostart').checked = info.enabled;
+  $('#s-autostart').disabled = !info.available;
+  $('#s-autostart-hint').textContent = info.available
+    ? "fastdl starts in the tray, so your browser's downloads always reach it."
+    : 'Not available in portable mode: it would have to write to the Windows registry.';
+}
+
+async function loadStorageInfo() {
+  const { storage } = await api.invoke('app_info');
+  const portable = storage.mode === 'portable';
+  $('#s-data').value = storage.dataDir;
+  $('#s-mode').textContent = portable ? 'Portable' : 'Installed';
+  $('#s-data-hint').textContent = portable
+    ? 'Portable mode: everything stays in this folder next to fastdl.exe. Delete fastdl.ini to turn it off.'
+    : 'To run fastdl portable, put a file named fastdl.ini next to fastdl.exe and restart it.';
+}
+$('#s-open-data').addEventListener('click', () => api.invoke('open_data_folder').catch(e => toast(String(e))));
 $('#s-copy-key').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($('#s-key').value); toast('Key copied. Paste it into the fastdl extension.'); }
   catch { $('#s-key').select(); }
@@ -305,8 +403,15 @@ sd.addEventListener('close', async () => {
       dir: $('#s-dir').value,
       theme: $('#s-theme').value,
       askBeforeDownload: $('#s-ask').checked,
+      closeToTray: $('#s-tray').checked,
+      trayHintShown: settings.trayHintShown,
     };
     await api.invoke('set_settings', { settings });
+    const autostart = $('#s-autostart').checked;
+    if (!$('#s-autostart').disabled && autostart !== autostartWas) {
+      try { await api.invoke('set_autostart', { enabled: autostart }); }
+      catch (e) { toast(`Couldn't change "Start fastdl when I sign in": ${e}`, 5000); return; }
+    }
     toast('Settings saved');
   }
   applyTheme();
@@ -436,6 +541,56 @@ ndDialog.addEventListener('close', async () => {
   setTimeout(showNextPending, 0);
 });
 
+// ---------- "Allow this browser?" (one-click pairing started from the extension) ----------
+const prDialog = $('#pair-req');
+let pairPrompt = null;
+let pairTimer;
+
+function showPairPrompt(p) {
+  pairPrompt = p;
+  $('#pr-browser').textContent = p.browser;
+  $('#pr-code').textContent = p.code;
+  clearTimeout(pairTimer);
+  pairTimer = setTimeout(() => closePairPrompt(p.ticket), p.expiresInMs);
+  if (mini) setMini(false);
+  if (!prDialog.open) prDialog.showModal();
+}
+
+// The request ended without an answer from this window (it expired, or a newer one replaced it).
+function closePairPrompt(ticket) {
+  if (pairPrompt?.ticket === ticket && prDialog.open) prDialog.close('gone');
+}
+
+// Allow / Don't allow. Esc counts as Don't allow.
+prDialog.addEventListener('close', async () => {
+  const p = pairPrompt;
+  const choice = prDialog.returnValue;
+  pairPrompt = null;
+  prDialog.returnValue = '';
+  clearTimeout(pairTimer);
+  if (!p || choice === 'gone') return;
+  const allow = choice === 'allow';
+  try {
+    await api.invoke('answer_pairing', { ticket: p.ticket, allow });
+    if (allow) toast(`${p.browser} is connected. Its downloads now go to fastdl.`, 4000);
+  } catch (e) { toast(String(e), 4000); }
+});
+
+api.listen('pair-request', showPairPrompt);
+api.listen('pair-request-closed', closePairPrompt);
+
+// ---------- First close: explain the tray ----------
+const trayDialog = $('#tray-hint');
+api.listen('tray-hint', () => { if (mini) setMini(false); if (!trayDialog.open) trayDialog.showModal(); });
+trayDialog.addEventListener('close', async () => {
+  const choice = trayDialog.returnValue;
+  trayDialog.returnValue = '';
+  if (choice !== 'ok' && choice !== 'quit') return; // Esc: stay open, and explain again next time
+  settings = { ...settings, trayHintShown: true };
+  await api.invoke('set_settings', { settings });
+  await api.invoke(choice === 'quit' ? 'quit_app' : 'hide_to_tray');
+});
+
 // ---------- Events from the engine ----------
 api.listen('progress', list => {
   for (const p of list) {
@@ -464,10 +619,13 @@ api.listen('item', it => {
   renderStatusBar();
   renderMini();
 });
-api.listen('removed', id => {
-  items.delete(id);
-  rows.get(id)?.remove();
-  rows.delete(id);
+api.listen('removed', ids => {
+  for (const id of [].concat(ids)) {
+    items.delete(id);
+    rows.get(id)?.remove();
+    rows.delete(id);
+    selected.delete(id);
+  }
   renderList();
   renderStatusBar();
   renderMini();
@@ -483,8 +641,10 @@ api.listen('removed', id => {
   renderList();
   renderStatusBar();
   showNextPending();
-  const ext = await api.invoke('extension_info');
-  if (!ext.ready) toast(`The browser extension can't connect: another program is using port ${ext.port}.`);
+  const [ext, info] = await Promise.all([api.invoke('extension_info'), api.invoke('app_info')]);
+  if (info.storage.notice) toast(info.storage.notice, 9000);
+  if (!ext.ready) toast(`The browser extension can't connect: another program is using port ${ext.port}.`, 6000);
+  if (ext.prompt) showPairPrompt(ext.prompt);
 })();
 
 // ---------- Simulated backend for previewing the UI in a browser ----------
@@ -492,7 +652,7 @@ function mockBackend() {
   const handlers = {};
   const emit = (ev, p) => (handlers[ev] || []).forEach(f => f(p));
   let next = 1;
-  const st = { settings: { connections: 8, maxActive: 3, dir: 'C:\\Users\\you\\Downloads', speedLimitKbps: 0, theme: 'system', askBeforeDownload: true }, items: [] };
+  const st = { settings: { connections: 8, maxActive: 3, dir: 'C:\\Users\\you\\Downloads', speedLimitKbps: 0, theme: 'system', askBeforeDownload: true, closeToTray: true, trayHintShown: false }, items: [] };
   const now = Date.now();
   const seed = [
     ['https://example.com/ubuntu-24.04.3-desktop-amd64.iso', 6.1e9, 0.42, 'downloading'],
@@ -509,6 +669,8 @@ function mockBackend() {
       error: status === 'failed' ? 'Server replied HTTP 403 to a range request' : null, added: now - id * 60000, finished: status === 'completed' ? now - id * 50000 : null });
   }
   const find = id => st.items.find(i => i.id === id);
+  // Open the page with ?pair to preview the "Allow this browser?" window.
+  if (location.search.includes('pair')) setTimeout(() => emit('pair-request', { ticket: 1, browser: 'Chromium', code: '9544', expiresInMs: 120000 }), 600);
   setTimeout(() => {
     const it = { id: next++, url: 'https://get.videolan.org/vlc/3.0.21/win64/vlc-3.0.21-win64.exe', name: 'vlc-3.0.21-win64.exe', dir: st.settings.dir,
       size: null, resumable: false, probed: false, status: 'pending', done: 0, error: null, added: Date.now(), finished: null };
@@ -535,10 +697,22 @@ function mockBackend() {
     },
     pause: ({ id }) => { const i = find(id); i.status = 'paused'; emit('item', { ...i }); },
     resume: ({ id }) => { const i = find(id); i.status = 'downloading'; i.error = null; emit('item', { ...i }); },
-    remove: ({ id }) => { st.items = st.items.filter(i => i.id !== id); emit('removed', id); },
-    clear_completed: () => st.items.filter(i => i.status === 'completed').forEach(i => cmds.remove({ id: i.id })),
+    remove: ({ id }) => cmds.remove_many({ ids: [id] }),
+    remove_many: ({ ids }) => {
+      const gone = st.items.filter(i => ids.includes(i.id)).map(i => i.id);
+      st.items = st.items.filter(i => !ids.includes(i.id));
+      if (gone.length) emit('removed', gone);
+    },
+    clear_completed: () => cmds.remove_many({ ids: st.items.filter(i => i.status === 'completed').map(i => i.id) }),
     set_settings: ({ settings }) => { st.settings = settings; },
-    extension_info: () => ({ key: '3f9a-07c2-b1d4-8e60-5a2f-c913-7d08-e4b6', ready: true, port: 17385 }),
+    extension_info: () => ({ key: '3f9a-07c2-b1d4-8e60-5a2f-c913-7d08-e4b6', ready: true, port: 17385, prompt: null }),
+    app_info: () => ({ version: '0.0.0-preview', storage: { mode: 'portable', dataDir: 'D:\\Apps\\fastdl\\data', notice: null } }),
+    open_data_folder: () => toast('Would open the data folder'),
+    answer_pairing: () => {},
+    autostart_info: () => ({ available: false, enabled: false }),
+    set_autostart: () => {},
+    hide_to_tray: () => toast('Would hide to the tray'),
+    quit_app: () => toast('Would quit'),
     new_extension_key: () => '91c0-4be7-2d38-f6a1-0c95-e27b-58d4-a3f1',
     confirm_download: ({ id, name, start }) => { const i = find(id); i.name = name; i.status = start ? 'downloading' : 'paused'; emit('item', { ...i }); },
     open_file: () => toast('Would open the file'),

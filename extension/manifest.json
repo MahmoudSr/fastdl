@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "fastdl",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Send your downloads to the fastdl app for faster multi-connection downloading.",
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1aM2xRT8RwXlg6+I+b+7orNWRcOM0DMbLMzPGBxeAsC+TwHs9qn4FmA1jNJ7Vk26qxdBC1wTvd1dMr2LeP6zx/hTdjaMhXdw0q48E4k7nkOemnazSUl3lgjgBYtuSuCZp67Yssq2TdDQ2wzc/YAJUTZm1ryG24DpIAm+ylPyePkyQ3X9N7d3Azw5yluplMzOiEwQO7ykT76WOeywDbix+Q2cqcTfCh1RI7CrzaBdtLcoxfdyaw0bFeuzvlGrZM2fKbc2b8IB94A/AHVfB58fe5jLtvCIpVzA0+3mgzeTjoHDtg6Ag/FkJlTEIh7a3iYPdQSEW2PHJzHoyVxvrABDHwIDAQAB",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyGgT2FkmMz+3HWKU5iHinhT8Q2HR5jNy1GRYRVE7jg3unrw1QeL8LbqIUezkl+vghXxr1ZWq+TkPZ1gC7R6DPRe4cybMFSa+80r1idyBTNnkENEj2JWnXkxQ4xHFqR9ZQNcE2dc23m6cd6wbPgQ91k/tDAbPpQBN9zF/urPcGEzqbxXe++QDD1Pyss6d6NR5UEWur5dC4/PZoUuVznu6VblE6CXWK3XwakPx1IIZfb8EcWFR90d43GaZ65H5/jynxbZGhny/oOsyH/oJAvsmB7CtxHB4N+ZNkX2Kv2IU/TrbVY0qAHoCGE3JC2stYPWj6wkBkB9n+5FjjIUx1veLUwIDAQAB",
   "permissions": [
     "downloads",
     "contextMenus",
