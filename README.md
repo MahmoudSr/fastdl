@@ -16,7 +16,7 @@ fastdl splits each file into pieces and downloads them over several connections 
 - **No double windows.** When fastdl takes a download, the browser's own "Save as" window never appears, even in browsers that ask where to save every file.
 - **Lives in the tray.** Closing the window keeps fastdl running next to the clock, so downloads from your browser still reach it. Click the icon to open it, right-click it to quit. It can also start when you sign in to Windows (Settings, off by default).
 - **Queue, speed limit, dark and light themes.**
-- **Small.** The installer is about 1.6 MB and the app uses about 30 MB of memory.
+- **Small.** The installer is about 1.8 MB and the app uses about 30 MB of memory.
 
 ## Polite by design (it won't get your IP blocked)
 
@@ -51,7 +51,7 @@ You can run the comparison yourself: `node test/vs-idm-local.js` (needs IDM inst
    - **Ungoogled Chromium and other Chromium builds:** download `fastdl-extension.crx`. Open `chrome://extensions`, turn on **Developer mode** (top right) and drag the `.crx` file onto the page.
      In Ungoogled Chromium you can also set `chrome://flags/#extension-mime-request-handling` to **Always prompt for install** and then just click the `.crx` link on the Releases page.
    - **Chrome, Edge, and any browser that refuses the `.crx`:** download `fastdl-extension.zip` and unzip it. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the unzipped folder. (Chrome and Edge only accept `.crx` files from their own stores.)
-3. **Connect them once.** With fastdl open, click the fastdl extension icon and click **Connect**. fastdl asks "Allow this browser to connect?". Check that it shows the same code as the extension and click **Allow**. That's all.
+3. **Connect them once.** If fastdl is open when you install the extension, it asks "Allow this browser to connect?" by itself. Otherwise click the fastdl extension icon and click **Connect**. Check that fastdl shows the same code as the extension and click **Allow**. That's all.
    Prefer typing? Click **Paste a key instead** in the extension, and copy the key from fastdl → **Settings**.
    If you use IDM too, turn off its browser extension, otherwise both will try to grab downloads.
 
