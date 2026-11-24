@@ -59,6 +59,68 @@ fn ensure_writable(dir: &Path) -> std::io::Result<()> {
     std::fs::remove_file(&probe)
 }
 
+// ---------- Keeping the WebView2 profile small ----------
+// fastdl's UI is a few local files, but by default WebView2 runs like a full Edge browser: it
+// downloads components in the background (Widevine, hyphenation and speech data, Safe Browsing
+// lists…), keeps a web cache, GPU shader caches and a usage-stats file per run. Over time that
+// grew the profile to around 50 MB, next to a 5 MB app.
+
+/// Browser arguments for every fastdl window (all windows on one profile must use the same ones).
+pub const WEBVIEW_ARGS: &str = concat!(
+    // Tauri's defaults, which setting our own replaces: no mini menu, PDF UI or SmartScreen.
+    // PersistentHistograms writes usage stats (BrowserMetrics, about 1 MB per run).
+    // Chromium reads only one --disable-features, so they all go in this one.
+    "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,PersistentHistograms",
+    // No background component downloads.
+    " --disable-component-update",
+    // Nothing fastdl shows comes from the web, so there's nothing worth caching.
+    " --disk-cache-size=1",
+    " --disable-gpu-shader-disk-cache",
+);
+
+/// Profile folders (and a few files) that hold only caches, downloaded components and usage
+/// stats. fastdl needs none of them, and the arguments above stop them from filling up again,
+/// but older versions filled them. Paths are relative to the profile's `EBWebView` folder.
+const DISPOSABLE: &[&str] = &[
+    "BrowserMetrics", "BrowserMetrics-spare.pma", "Crashpad/reports", "ShaderCache", "GrShaderCache", "GraphiteDawnCache", "GPUPersistentCache",
+    "component_crx_cache", "extensions_crx_cache",
+    // Components (WebView2 downloads them again if it ever needs them).
+    "CertificateRevocation", "FirstPartySetsPreloaded", "hyphen-data", "MEIPreload", "OnDeviceHeadSuggestModel",
+    "OriginTrials", "PKIMetadata", "Safe Browsing", "SafetyTips", "Speech Recognition", "Subresource Filter",
+    "TpcdMetadata", "Trust Protection Lists", "TrustTokenKeyCommitments", "WidevineCdm", "ZxcvbnData",
+    // Per-profile caches.
+    "Default/Cache", "Default/Code Cache", "Default/GPUCache", "Default/DawnGraphiteCache", "Default/DawnWebGPUCache",
+    "Default/Shared Dictionary",
+];
+
+/// Delete the disposable folders and files from a WebView2 profile (`profile_dir` is the folder
+/// given to WebView2; it keeps its data in `EBWebView` inside it). Must run before any window
+/// opens. Best effort: a file still in use is simply left for next time. Returns the bytes freed.
+pub fn trim_webview_profile(profile_dir: &Path) -> u64 {
+    let root = profile_dir.join("EBWebView");
+    DISPOSABLE.iter().map(|rel| {
+        let path = root.join(rel);
+        // symlink_metadata: a link is neither a dir nor a file here, so it's never followed out of the profile.
+        match std::fs::symlink_metadata(&path) {
+            Ok(m) if m.is_dir() => {
+                let size = dir_size(&path);
+                if std::fs::remove_dir_all(&path).is_ok() { size } else { size.saturating_sub(dir_size(&path)) }
+            }
+            Ok(m) if m.is_file() => if std::fs::remove_file(&path).is_ok() { m.len() } else { 0 },
+            _ => 0,
+        }
+    }).sum()
+}
+
+fn dir_size(dir: &Path) -> u64 {
+    let Ok(entries) = std::fs::read_dir(dir) else { return 0 };
+    entries.flatten().map(|e| match e.file_type() {
+        Ok(t) if t.is_dir() => dir_size(&e.path()),
+        Ok(t) if t.is_file() => e.metadata().map(|m| m.len()).unwrap_or(0),
+        _ => 0,
+    }).sum()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -117,5 +179,49 @@ mod tests {
         assert!(s.webview_dir.is_none());
         assert!(s.notice.as_deref().is_some_and(|n| n.contains("Portable mode is off")));
         let _ = std::fs::remove_dir_all(exe);
+    }
+
+    #[test]
+    fn trimming_removes_only_caches() {
+        let profile = temp_dir("trim");
+        let eb = profile.join("EBWebView");
+        let write = |rel: &str, bytes: usize| {
+            let p = eb.join(rel);
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            std::fs::write(p, vec![0u8; bytes]).unwrap();
+        };
+        write("Default/Cache/Cache_Data/data_1", 1000);
+        write("WidevineCdm/4.10/manifest.json", 200);
+        write("BrowserMetrics/BrowserMetrics-1.pma", 300);
+        write("BrowserMetrics-spare.pma", 50);
+        // Kept: settings and storage the WebView itself needs.
+        write("Local State", 10);
+        write("Default/Preferences", 10);
+        write("Default/Local Storage/leveldb/000003.log", 10);
+        // fastdl's own files live outside EBWebView and are never looked at.
+        std::fs::write(profile.join("downloads.json"), "{}").unwrap();
+
+        assert_eq!(trim_webview_profile(&profile), 1550);
+        for gone in ["Default/Cache", "WidevineCdm", "BrowserMetrics", "BrowserMetrics-spare.pma"] {
+            assert!(!eb.join(gone).exists(), "{gone} is deleted");
+        }
+        for kept in ["Local State", "Default/Preferences", "Default/Local Storage/leveldb/000003.log"] {
+            assert!(eb.join(kept).is_file(), "{kept} is kept");
+        }
+        assert!(profile.join("downloads.json").is_file());
+        assert_eq!(trim_webview_profile(&profile), 0, "nothing left to trim");
+        let _ = std::fs::remove_dir_all(profile);
+    }
+
+    #[test]
+    fn trimming_a_missing_profile_is_fine() {
+        assert_eq!(trim_webview_profile(&std::env::temp_dir().join("fastdl-no-such-profile")), 0);
+    }
+
+    #[test]
+    fn webview_args_keep_tauris_defaults_in_one_flag() {
+        // Chromium honours a single --disable-features, so a second one would drop Tauri's defaults.
+        assert_eq!(WEBVIEW_ARGS.matches("--disable-features=").count(), 1);
+        for f in ["msWebOOUI", "msPdfOOUI", "msSmartScreenProtection"] { assert!(WEBVIEW_ARGS.contains(f), "{f}"); }
     }
 }

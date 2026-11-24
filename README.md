@@ -10,7 +10,8 @@ fastdl splits each file into pieces and downloads them over several connections 
 
 - **Multi-connection downloads.** Files are split into pieces that download in parallel. When one piece finishes early, fastdl splits the biggest remaining piece so every connection stays busy until the end.
 - **Pause and resume**, even after closing the app (if the server supports it).
-- **Browser extension** for Chrome, Edge, Brave and Opera. Click a download in your browser and fastdl asks where to save it. If fastdl isn't running, the browser downloads normally.
+- **Browser extension** for Chrome, Edge, Brave and Opera. Click a download in your browser and a small **New download** window asks where to save it, while fastdl itself stays in the background. Tick **Don't ask again** (or turn off **Ask before starting downloads** in Settings) and downloads start silently, with no window at all. If fastdl isn't running, the browser downloads normally.
+- **See what's next.** **In progress** lists what's downloading now, then the queue in the order it will start ("Queued · next", "#2"…), then paused downloads. **All** shows them the same way, above your finished downloads.
 - **Mini view.** A small always-on-top bar with your active downloads (`Ctrl+M`).
 - **Clean up in one go.** Select downloads with click, `Ctrl`+click or `Shift`+click, or press `Ctrl+A` for all of them, then `Del` to remove them. Double-click a finished download to open it.
 - **No double windows.** When fastdl takes a download, the browser's own "Save as" window never appears, even in browsers that ask where to save every file.
@@ -78,6 +79,8 @@ If fastdl can't write next to the exe (a read-only drive, or a folder like Progr
 
 The portable app needs the Microsoft Edge WebView2 Runtime, which comes with Windows 10 and 11.
 
+The WebView2 folder holds only what fastdl's window needs, a few MB. fastdl turns off the web caches and background component downloads WebView2 would otherwise keep (they grew the folder to around 50 MB in older versions), and deletes what older versions left behind when it starts.
+
 ## Security
 
 **Extension ↔ app**
@@ -112,12 +115,13 @@ npx tauri build          # installer ends up in app/src-tauri/target/release/bun
 npx tauri dev            # run in development mode
 ```
 
-The UI in `app/ui/` is plain HTML, CSS and JS with no framework. Opening `app/ui/index.html` directly in a browser shows it with simulated downloads, which is handy for working on the design.
+The UI in `app/ui/` is plain HTML, CSS and JS with no framework. Opening `app/ui/index.html` (or `confirm.html`, the New download window) directly in a browser shows it with simulated downloads, which is handy for working on the design.
 
 ## Tests
 
 ```sh
-cd app/src-tauri && cargo test --lib   # unit tests: engine, extension endpoint and pairing, portable mode
+cd app/src-tauri && cargo test --lib   # unit tests: engine, extension endpoint and pairing, portable mode, profile clean-up
+node test/ui-test.js                   # the list order, queue places and status bar of the UI
 node test/engine-test.js               # builds the Rust engine and tests it against a throttled, flaky local server
 node test/extension-test.js            # the extension's code against the app's real endpoint: pairing, signing (close fastdl first)
 node test/pack-extension-test.js       # the .zip/.crx packer (also checks it against Chrome's own packer, if Chrome is installed)
@@ -142,7 +146,8 @@ The `.crx` has to be signed with the extension's original private key: that key 
 |---|---|
 | `app/src-tauri/src/engine.rs` | Download engine (Rust) |
 | `app/src-tauri/src/bridge.rs` | Local endpoint for the browser extension, and pairing |
-| `app/src-tauri/src/storage.rs` | Where data is kept (installed or portable mode) |
+| `app/src-tauri/src/storage.rs` | Where data is kept (installed or portable mode), and keeping the WebView2 profile small |
+| `app/src-tauri/src/windows.rs` | The main window and the New download window |
 | `app/ui/` | App interface |
 | `extension/` | Browser extension (Manifest V3) |
 | `scripts/pack-extension.js` | Builds the extension's `.zip` and signed `.crx` |

@@ -2,6 +2,7 @@ pub mod bridge; // pub for examples/bridge_check.rs
 pub mod engine;
 mod storage;
 mod tray;
+mod windows;
 
 use engine::{Engine, ItemDto, Settings, StateDto};
 use std::sync::Arc;
@@ -23,6 +24,15 @@ fn add_download(e: Eng, url: String) -> Result<ItemDto, String> { e.add(url, vec
 fn confirm_download(e: Eng, id: u64, name: String, dir: String, start: bool) -> Result<(), String> {
     e.confirm(id, name, dir, start)
 }
+
+/// "Don't ask again" in the New download window.
+#[tauri::command]
+fn stop_asking(e: Eng) { e.stop_asking() }
+
+/// The New download window has nothing left to show. Async so it runs off the main thread,
+/// like `windows::show_confirm`, with which it shares a lock.
+#[tauri::command]
+async fn close_confirm(app: AppHandle, e: Eng<'_>) -> Result<bool, ()> { Ok(windows::close_confirm_if_done(&app, &e)) }
 
 #[tauri::command]
 fn pause(e: Eng, id: u64) { e.pause(id) }
@@ -141,15 +151,17 @@ fn set_autostart(app: AppHandle, s: State<'_, Storage>, enabled: bool) -> Result
     if enabled { launcher.enable() } else { launcher.disable() }.map_err(|e| e.to_string())
 }
 
+/// Folder picker, on top of the window that asked (the main window or New download).
 #[tauri::command]
-async fn pick_folder(app: tauri::AppHandle) -> Option<String> {
+async fn pick_folder(window: tauri::WebviewWindow) -> Option<String> {
     tauri::async_runtime::spawn_blocking(move || {
-        app.dialog().file().blocking_pick_folder().map(|p| p.to_string())
+        window.dialog().file().set_parent(&window).blocking_pick_folder().map(|p| p.to_string())
     }).await.ok().flatten()
 }
 
-/// Bring the main window forward: a download or pairing request came in from the browser,
-/// fastdl was opened a second time, or you clicked the tray icon.
+/// Bring the main window forward: a pairing request came in from the browser, fastdl was
+/// opened a second time, or you clicked the tray icon. Downloads from the browser don't do
+/// this: they either start quietly or ask in their own small window.
 fn bring_to_front(app: &AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.unminimize();
@@ -169,11 +181,22 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .on_window_event(tray::on_window_event)
+        .on_window_event(|window, event| {
+            tray::on_window_event(window, event);
+            windows::on_window_event(window, event);
+        })
         .setup(|app| {
             // Portable mode is Windows-only: elsewhere the WebView's data can't be moved next to the app.
             let exe_dir = std::env::current_exe().ok().and_then(|p| p.parent().map(|d| d.to_path_buf())).filter(|_| cfg!(windows));
             let storage = Storage::resolve(exe_dir.as_deref(), app.path().app_data_dir()?);
+            // Clear out caches older versions let grow, before any window opens and WebView2
+            // holds them open. (Without a folder of our own, Tauri gives WebView2 the app's
+            // local data folder.)
+            let profile = match &storage.webview_dir { Some(dir) => Some(dir.clone()), None => app.path().app_local_data_dir().ok() };
+            if let Some(profile) = profile { storage::trim_webview_profile(&profile); }
+            app.manage(storage);
+            app.manage(windows::ConfirmWindow::default());
+            let storage = app.state::<Storage>();
 
             let downloads = app.path().download_dir().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
             let handle = app.handle().clone();
@@ -187,26 +210,30 @@ pub fn run() {
                 bridge::PairEvent::Closed(ticket) => { let _ = handle.emit("pair-request-closed", ticket); }
             }));
             let engine = Engine::new(emit, storage.data_dir.clone(), downloads);
-            // Downloads sent from the browser extension; bring the window forward so you see them.
+            app.manage(engine.clone());
+            app.manage(pairing.clone());
+
+            // Downloads sent from the browser extension. Only one that waits for your answer
+            // shows a window (the small New download one); the rest start in the background.
+            // Started after everything above is managed: the New download window may open at once.
             let handle = app.handle().clone();
-            bridge::start(engine.clone(), pairing.clone(), Box::new(move || bring_to_front(&handle)));
+            bridge::start(engine, pairing, Box::new(move |needs_answer| {
+                if needs_answer { windows::show_confirm(&handle); }
+            }));
 
             // The main window is created here rather than from tauri.conf.json ("create": false)
-            // so that in portable mode the WebView2 profile goes next to the exe too. Created last,
-            // so everything its first commands need is already managed.
+            // so that it gets the same WebView2 profile and arguments as the New download window
+            // (in portable mode, that profile is next to the exe).
             let config = app.config().app.windows.iter().find(|w| w.label == "main").ok_or("no \"main\" window in tauri.conf.json")?;
             let start_hidden = std::env::args().any(|a| a == tray::START_HIDDEN_ARG);
-            let mut window = tauri::WebviewWindowBuilder::from_config(app.handle(), config)?.visible(!start_hidden);
-            if let Some(dir) = &storage.webview_dir { window = window.data_directory(dir.clone()); }
-            app.manage(engine);
-            app.manage(pairing);
-            app.manage(storage);
+            let window = windows::with_profile(tauri::WebviewWindowBuilder::from_config(app.handle(), config)?, &storage)
+                .visible(!start_hidden);
             tray::create(app.handle())?;
             window.build()?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            get_state, add_download, confirm_download, pause, resume, remove, remove_many, clear_completed,
+            get_state, add_download, confirm_download, stop_asking, close_confirm, pause, resume, remove, remove_many, clear_completed,
             set_settings, open_file, show_in_folder, pick_folder, set_mini, extension_info, new_extension_key,
             answer_pairing, app_info, open_data_folder, hide_to_tray, quit_app, autostart_info, set_autostart
         ])

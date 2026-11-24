@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New download - fastdl</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="confirm-page">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="t-video" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></symbol>
+      <symbol id="t-audio" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+      <symbol id="t-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+      <symbol id="t-app" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+      <symbol id="t-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></symbol>
+      <symbol id="t-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></symbol>
+      <symbol id="t-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+    </defs>
+  </svg>
+
+  <main class="confirm" aria-labelledby="nd-title">
+    <div class="nd-head">
+      <div class="ftype"><svg><use id="nd-icon" href="#t-file"/></svg></div>
+      <div class="nd-head-text">
+        <h1 id="nd-title">New download</h1>
+        <p class="nd-from" id="nd-from"></p>
+      </div>
+      <span class="tag" id="nd-more" hidden></span>
+    </div>
+    <div class="field">
+      <label for="nd-name">File name</label>
+      <input id="nd-name" type="text" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="nd-dir">Save to</label>
+      <div class="row">
+        <input id="nd-dir" type="text" readonly>
+        <button type="button" class="btn" id="nd-browse"><svg><use href="#i-folder"/></svg>Browse</button>
+      </div>
+    </div>
+    <p class="nd-info" id="nd-info" aria-live="polite"></p>
+    <p class="form-error" id="nd-error" role="alert" hidden></p>
+    <div class="actions">
+      <label class="check nd-dont-ask" title="You can turn asking back on in Settings">
+        <input type="checkbox" id="nd-dont-ask"> Don't ask again
+      </label>
+      <button type="button" class="btn ghost" data-answer="cancel">Cancel</button>
+      <button type="button" class="btn" data-answer="later" title="Add it to the list, paused">Later</button>
+      <button type="button" class="btn primary" data-answer="start" id="nd-start"><svg><use href="#i-down"/></svg>Download</button>
+    </div>
+  </main>
+
+  <script src="shared.js"></script>
+  <script src="confirm.js"></script>
+</body>
+</html>

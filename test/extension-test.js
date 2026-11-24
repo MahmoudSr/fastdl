@@ -124,8 +124,18 @@ function loadCommon(brands) {
     ext.store.key = r.key;
     mark = lines.length;
     await ext.sendToFastdl({ url: 'http://127.0.0.1:9/file.bin', referrer: null, cookies: '' });
-    await next('ADDED', mark);
+    const [, firstMode] = await next('ADDED', mark);
     check('signed download is accepted', true);
+    // "Ask before starting" is on by default: the download waits for the confirm window.
+    check('it waits for an answer while "Ask" is on', firstMode === 'ask', firstMode);
+    // With "Ask" off, it starts right away, so fastdl has no reason to show any window.
+    mark = lines.length;
+    say('stop-asking');
+    await next('ASKING-OFF', mark);
+    mark = lines.length;
+    await ext.sendToFastdl({ url: 'http://127.0.0.1:9/file2.bin', referrer: null, cookies: '' });
+    const [, secondMode] = await next('ADDED', mark);
+    check('it starts right away (no window) once "Ask" is off', secondMode === 'start', secondMode);
     const unsigned = await fetch(`${API}/add`, { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ url: 'http://127.0.0.1:9/x' }) });
     check('unsigned download gets 401', unsigned.status === 401);
   } catch (e) {

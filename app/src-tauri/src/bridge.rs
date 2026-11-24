@@ -259,13 +259,17 @@ struct PairReq {
     browser: String,
 }
 
+/// A download from the browser was accepted. `true` when it waits for you to confirm it
+/// (Settings: "Ask before starting downloads"), `false` when it was queued right away.
+pub type OnAdd = Box<dyn Fn(bool) + Send + Sync>;
+
 struct Ctx {
     engine: Arc<Engine>,
     pairing: Arc<Pairing>,
-    on_add: Box<dyn Fn() + Send + Sync>,
+    on_add: OnAdd,
 }
 
-pub fn start(engine: Arc<Engine>, pairing: Arc<Pairing>, on_add: Box<dyn Fn() + Send + Sync>) {
+pub fn start(engine: Arc<Engine>, pairing: Arc<Pairing>, on_add: OnAdd) {
     // Bind right away (not in the background) so READY is correct before the window asks.
     let Ok(std_listener) = std::net::TcpListener::bind(("127.0.0.1", PORT)) else { return };
     if std_listener.set_nonblocking(true).is_err() { return; }
@@ -364,7 +368,7 @@ async fn route(req: &Request, ctx: &Ctx) -> (u16, String) {
                 headers.push(("Referer".to_string(), r));
             }
             match ctx.engine.add(add.url, headers, true) {
-                Ok(_) => { (ctx.on_add)(); (200, r#"{"ok":true}"#.into()) }
+                Ok(item) => { (ctx.on_add)(item.waits_for_answer()); (200, r#"{"ok":true}"#.into()) }
                 Err(e) => (400, serde_json::json!({ "error": e }).to_string()),
             }
         }

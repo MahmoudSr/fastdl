@@ -46,6 +46,9 @@ jobs:
         working-directory: app/src-tauri
         run: cargo test --lib
 
+      - name: Test the list logic of the UI
+        run: node test/ui-test.js
+
       - name: Test the extension against the app's endpoint (end to end)
         if: matrix.os == 'windows-latest'
         run: node test/extension-test.js

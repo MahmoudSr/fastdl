@@ -1,38 +1,18 @@
 'use strict';
 
+// Helpers shared with the New download window are in shared.js.
+
 // ---------- Backend bridge (Tauri, or a simulated one when opened in a plain browser) ----------
-const T = window.__TAURI__;
-const api = T ? {
-  invoke: (cmd, args) => T.core.invoke(cmd, args),
-  listen: (ev, fn) => T.event.listen(ev, e => fn(e.payload)),
-} : mockBackend();
+const api = connect(mockBackend);
 
 // ---------- State ----------
 const items = new Map();   // id -> item (+ speed, conns)
 const rows = new Map();    // id -> row element
 let settings = null;
 let filter = { status: 'all', type: 'all', q: '' };
-
-const TYPES = {
-  video: { label: 'Video', icon: 't-video', ext: 'mp4 mkv avi mov webm flv wmv m4v ts' },
-  audio: { label: 'Music', icon: 't-audio', ext: 'mp3 wav flac aac ogg m4a opus wma' },
-  doc: { label: 'Documents', icon: 't-doc', ext: 'pdf doc docx xls xlsx ppt pptx txt epub csv md rtf odt' },
-  app: { label: 'Programs', icon: 't-app', ext: 'exe msi apk dmg deb rpm appimage iso img msix' },
-  archive: { label: 'Archives', icon: 't-archive', ext: 'zip rar 7z tar gz bz2 xz zst tgz' },
-  image: { label: 'Images', icon: 't-image', ext: 'jpg jpeg png gif webp svg bmp heic avif tif tiff' },
-};
-const extMap = {};
-for (const [k, t] of Object.entries(TYPES)) for (const e of t.ext.split(' ')) extMap[e] = k;
-const typeOf = name => extMap[(name.split('.').pop() || '').toLowerCase()] || 'other';
+let queuePos = new Map(); // id -> place in the queue (1 = next), refreshed by renderList
 
 // ---------- Formatting ----------
-function fmtBytes(n) {
-  if (n == null) return '?';
-  const u = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let i = 0;
-  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
-  return `${n.toFixed(i === 0 ? 0 : n < 10 ? 2 : 1)} ${u[i]}`;
-}
 function fmtEta(s) {
   if (!isFinite(s) || s <= 0) return '';
   if (s < 60) return `${Math.ceil(s)}s left`;
@@ -42,13 +22,13 @@ function fmtEta(s) {
 const STATUS_TEXT = { queued: 'Queued', downloading: 'Downloading', paused: 'Paused', completed: 'Completed', failed: 'Failed' };
 
 // ---------- Rendering ----------
-const $ = s => document.querySelector(s);
 const list = $('#list');
+const VIEW_TITLES = { all: 'All downloads', progress: 'In progress', completed: 'Completed', failed: 'Failed' };
 
 function matches(it) {
-  if (it.status === 'pending') return false; // shown in the confirm window instead
+  if (it.status === 'pending') return false; // shown in the New download window instead
   const s = filter.status;
-  if (s === 'waiting' ? !['queued', 'paused'].includes(it.status) : s !== 'all' && it.status !== s) return false;
+  if (s === 'progress' ? !isInProgress(it) : s !== 'all' && it.status !== s) return false;
   if (filter.type !== 'all' && typeOf(it.name) !== filter.type) return false;
   if (filter.q && !it.name.toLowerCase().includes(filter.q)) return false;
   return true;
@@ -64,7 +44,7 @@ function buildRow(it) {
   el.setAttribute('role', 'listitem');
   el.dataset.id = it.id;
   el.innerHTML = `
-    <div class="ftype"><svg><use href="#${(TYPES[typeOf(it.name)] || { icon: 't-file' }).icon}"/></svg></div>
+    <div class="ftype"><svg><use href="#${typeIcon(it.name)}"/></svg></div>
     <div class="body">
       <div class="name"></div>
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div class="fill"></div></div>
@@ -88,7 +68,7 @@ function renderRow(it) {
   el.dataset.status = it.status;
   r.name.textContent = it.name;
   r.name.title = it.url;
-  r.icon.setAttribute('href', '#' + (TYPES[typeOf(it.name)] || { icon: 't-file' }).icon);
+  r.icon.setAttribute('href', '#' + typeIcon(it.name));
   let acts = '';
   if (it.status === 'downloading' || it.status === 'queued') acts += iconBtn('i-pause', 'Pause', 'pause');
   if (it.status === 'paused') acts += iconBtn('i-play', 'Resume', 'resume');
@@ -109,7 +89,8 @@ function renderProgress(it) {
   r.fill.style.transform = `scaleX(${pct / 100})`;
   r.bar.setAttribute('aria-valuenow', pct.toFixed(0));
   const live = it.status === 'downloading';
-  r.st.textContent = live && it.size ? `${pct.toFixed(pct < 10 ? 1 : 0)}%` : STATUS_TEXT[it.status];
+  r.st.textContent = live && it.size ? `${pct.toFixed(pct < 10 ? 1 : 0)}%`
+    : it.status === 'queued' && queuePos.has(it.id) ? queueText(queuePos.get(it.id)) : STATUS_TEXT[it.status];
   if (it.status === 'completed') r.sz.textContent = fmtBytes(it.size ?? it.done);
   else r.sz.textContent = `${fmtBytes(it.done)} of ${it.size ? fmtBytes(it.size) : 'unknown size'}`;
   r.sp.textContent = live ? `${fmtBytes(it.speed || 0)}/s` : '';
@@ -121,9 +102,14 @@ function renderProgress(it) {
   if (!it.resumable && live && it.size == null) r.cn.textContent = 'single connection';
 }
 
-// Re-order / filter the visible list (newest first).
+// Re-order / filter the visible list: unfinished downloads first, in the order they'll run
+// (see compareForList in shared.js), then the rest newest first.
 function renderList() {
-  const visible = [...items.values()].filter(matches).sort((a, b) => b.added - a.added);
+  const visible = [...items.values()].filter(matches).sort(compareForList);
+  // Queue places shift whenever a download starts, is added or is paused: refresh them all.
+  const oldPos = queuePos;
+  queuePos = queuePositions([...items.values()]);
+  for (const [id, pos] of queuePos) if (oldPos.get(id) !== pos && rows.has(id)) renderProgress(items.get(id));
   const frag = document.createDocumentFragment();
   for (const it of visible) { if (!rows.has(it.id)) renderRow(it); frag.appendChild(rows.get(it.id)); }
   list.replaceChildren(frag);
@@ -140,13 +126,12 @@ function renderCounts() {
   const all = [...items.values()].filter(i => i.status !== 'pending');
   const c = {
     all: all.length,
-    downloading: all.filter(i => i.status === 'downloading').length,
-    waiting: all.filter(i => i.status === 'queued' || i.status === 'paused').length,
+    progress: all.filter(isInProgress).length,
     completed: all.filter(i => i.status === 'completed').length,
     failed: all.filter(i => i.status === 'failed').length,
   };
   for (const [k, v] of Object.entries(c)) document.querySelector(`[data-count="${k}"]`).textContent = v || '';
-  $('#active-count').textContent = `${c.downloading} active${c.waiting ? ` · ${c.waiting} waiting` : ''}`;
+  $('#active-count').textContent = progressSummary(all);
   $('#clear-done').hidden = c.completed === 0;
 }
 
@@ -162,12 +147,6 @@ function renderStatusBar() {
   for (const it of items.values()) if (it.status === 'downloading') total += it.speed || 0;
   $('#total-speed').textContent = `${fmtBytes(total)}/s`;
   $('#limit-label').textContent = settings && settings.speedLimitKbps ? `Limit ${fmtBytes(settings.speedLimitKbps * 1024)}/s` : '';
-}
-
-function applyTheme() {
-  const t = settings?.theme || 'system';
-  if (t === 'system') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.dataset.theme = t;
 }
 
 let toastTimer;
@@ -313,7 +292,7 @@ $('.side').addEventListener('click', e => {
   if (b.dataset.status) {
     filter.status = b.dataset.status;
     document.querySelectorAll('[data-status]').forEach(n => n.classList.toggle('on', n === b));
-    $('#view-title').textContent = { all: 'All downloads', downloading: 'Active', waiting: 'Queued & paused', completed: 'Completed', failed: 'Failed' }[filter.status];
+    $('#view-title').textContent = VIEW_TITLES[filter.status];
   } else if (b.dataset.type) {
     filter.type = b.dataset.type;
     renderTypes();
@@ -414,7 +393,7 @@ sd.addEventListener('close', async () => {
     }
     toast('Settings saved');
   }
-  applyTheme();
+  applyTheme(settings.theme);
   renderStatusBar();
 });
 
@@ -477,69 +456,6 @@ $('#mini-on').addEventListener('click', () => setMini(true));
 $('#mini-off').addEventListener('click', () => setMini(false));
 $('.mini-bar').addEventListener('dblclick', e => { if (!e.target.closest('button')) setMini(false); });
 $('#mini-min').addEventListener('click', () => T?.window.getCurrentWindow().minimize());
-
-// ---------- New download confirm window (downloads sent from the browser) ----------
-const ndDialog = $('#new-dl');
-const nd = { id: null, nameEdited: false };
-
-function fillNewDownload(it) {
-  if (!nd.nameEdited) $('#nd-name').value = it.name;
-  if (!$('#nd-dir').value) $('#nd-dir').value = it.dir;
-  $('#nd-icon').setAttribute('href', '#' + (TYPES[typeOf($('#nd-name').value)] || { icon: 't-file' }).icon);
-  try { $('#nd-from').textContent = `From ${new URL(it.url).host}`; } catch { $('#nd-from').textContent = ''; }
-  $('#nd-from').title = it.url;
-  const info = $('#nd-info');
-  info.classList.toggle('warn', Boolean(it.error) || (it.probed && !it.resumable));
-  if (it.error) info.textContent = `Couldn't check the file (${it.error}). You can still try to download it.`;
-  else if (!it.probed) info.textContent = 'Getting file info…';
-  else info.textContent = `${it.size != null ? fmtBytes(it.size) : 'Unknown size'} · ` +
-    (it.resumable ? 'Can pause and resume' : "Can't pause or resume (the server doesn't allow it)");
-}
-
-function showNextPending() {
-  if (ndDialog.open) return;
-  const next = [...items.values()].filter(i => i.status === 'pending').sort((a, b) => a.added - b.added)[0];
-  if (!next) return;
-  nd.id = next.id;
-  nd.nameEdited = false;
-  $('#nd-dir').value = '';
-  $('#nd-error').hidden = true;
-  fillNewDownload(next);
-  ndDialog.showModal();
-  $('#nd-start').focus();
-}
-
-$('#nd-name').addEventListener('input', () => {
-  nd.nameEdited = true;
-  $('#nd-icon').setAttribute('href', '#' + (TYPES[typeOf($('#nd-name').value)] || { icon: 't-file' }).icon);
-});
-$('#nd-browse').addEventListener('click', async () => {
-  const dir = await api.invoke('pick_folder');
-  if (dir) $('#nd-dir').value = dir;
-});
-
-// Download / Later: validate with the engine before closing, so errors show in the window.
-$('#nd-form').addEventListener('submit', async e => {
-  const choice = e.submitter?.value;
-  if (choice !== 'start' && choice !== 'later') return; // Cancel closes normally
-  e.preventDefault();
-  try {
-    await api.invoke('confirm_download', { id: nd.id, name: $('#nd-name').value.trim(), dir: $('#nd-dir').value, start: choice === 'start' });
-    ndDialog.close('done');
-  } catch (err) {
-    $('#nd-error').textContent = String(err);
-    $('#nd-error').hidden = false;
-  }
-});
-
-// Cancel button or Esc: drop the download.
-ndDialog.addEventListener('close', async () => {
-  const id = nd.id;
-  nd.id = null;
-  if (ndDialog.returnValue !== 'done' && id != null) await api.invoke('remove', { id, deleteFile: false });
-  ndDialog.returnValue = '';
-  setTimeout(showNextPending, 0);
-});
 
 // ---------- "Allow this browser?" (one-click pairing started from the extension) ----------
 const prDialog = $('#pair-req');
@@ -605,12 +521,7 @@ api.listen('progress', list => {
 api.listen('item', it => {
   const prev = items.get(it.id);
   const merged = { ...prev, ...it };
-  if (it.status === 'pending') {
-    items.set(it.id, merged);
-    if (mini) setMini(false); // the confirm window needs the full view
-    if (nd.id === it.id) fillNewDownload(merged); else showNextPending();
-    return;
-  }
+  if (it.status === 'pending') { items.set(it.id, merged); return; } // asked about in its own window
   if (it.status !== 'downloading') { merged.speed = 0; merged.conns = 0; }
   items.set(it.id, merged);
   if (prev && prev.status !== 'completed' && it.status === 'completed') toast(`Finished: ${it.name}`);
@@ -618,6 +529,14 @@ api.listen('item', it => {
   if (!prev || prev.status !== it.status) renderList(); else renderCounts();
   renderStatusBar();
   renderMini();
+});
+// Settings changed elsewhere (e.g. "Don't ask again" in the New download window).
+api.listen('settings', s => {
+  // If the Settings dialog is open, don't let its Save undo the change.
+  if (sd.open && s.askBeforeDownload !== settings.askBeforeDownload) $('#s-ask').checked = s.askBeforeDownload;
+  settings = s;
+  applyTheme(settings.theme);
+  renderStatusBar();
 });
 api.listen('removed', ids => {
   for (const id of [].concat(ids)) {
@@ -636,11 +555,10 @@ api.listen('removed', ids => {
   const st = await api.invoke('get_state');
   settings = st.settings;
   for (const it of st.items) items.set(it.id, { ...it, speed: 0, conns: 0 });
-  applyTheme();
+  applyTheme(settings.theme);
   renderTypes();
   renderList();
   renderStatusBar();
-  showNextPending();
   const [ext, info] = await Promise.all([api.invoke('extension_info'), api.invoke('app_info')]);
   if (info.storage.notice) toast(info.storage.notice, 9000);
   if (!ext.ready) toast(`The browser extension can't connect: another program is using port ${ext.port}.`, 6000);
@@ -659,6 +577,7 @@ function mockBackend() {
     ['https://example.com/Big_Buck_Bunny_4K.mp4', 8.9e8, 0.77, 'downloading'],
     ['https://example.com/node-v24.18.0-x64.msi', 3.2e7, 0.3, 'paused'],
     ['https://example.com/project-assets.zip', 2.4e8, 0, 'queued'],
+    ['https://example.com/fonts-pack.zip', 6.4e7, 0, 'queued'],
     ['https://example.com/annual-report-2026.pdf', 4.8e6, 1, 'completed'],
     ['https://example.com/podcast-episode-112.mp3', 7.3e7, 1, 'completed'],
     ['https://example.com/dataset.tar.gz', 1.2e9, 0.12, 'failed'],
@@ -671,13 +590,6 @@ function mockBackend() {
   const find = id => st.items.find(i => i.id === id);
   // Open the page with ?pair to preview the "Allow this browser?" window.
   if (location.search.includes('pair')) setTimeout(() => emit('pair-request', { ticket: 1, browser: 'Chromium', code: '9544', expiresInMs: 120000 }), 600);
-  setTimeout(() => {
-    const it = { id: next++, url: 'https://get.videolan.org/vlc/3.0.21/win64/vlc-3.0.21-win64.exe', name: 'vlc-3.0.21-win64.exe', dir: st.settings.dir,
-      size: null, resumable: false, probed: false, status: 'pending', done: 0, error: null, added: Date.now(), finished: null };
-    st.items.push(it);
-    emit('item', { ...it });
-    setTimeout(() => { Object.assign(it, { size: 4.07e7, resumable: true, probed: true }); emit('item', { ...it }); }, 900);
-  }, 1500);
   setInterval(() => {
     const act = st.items.filter(i => i.status === 'downloading');
     emit('progress', act.map(i => {
@@ -714,7 +626,6 @@ function mockBackend() {
     hide_to_tray: () => toast('Would hide to the tray'),
     quit_app: () => toast('Would quit'),
     new_extension_key: () => '91c0-4be7-2d38-f6a1-0c95-e27b-58d4-a3f1',
-    confirm_download: ({ id, name, start }) => { const i = find(id); i.name = name; i.status = start ? 'downloading' : 'paused'; emit('item', { ...i }); },
     open_file: () => toast('Would open the file'),
     show_in_folder: () => toast('Would open the folder'),
     pick_folder: () => null,

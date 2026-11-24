@@ -191,9 +191,6 @@ dialog h2 { font: 600 17px/1.2 "Segoe UI Variable Display", "Segoe UI", sans-ser
 .nd-from { color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nd-info { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .nd-info.warn { color: var(--warn); }
-#nd-form .form-error { padding: 0; }
-#new-dl { width: min(500px, calc(100vw - 32px)); }
-#new-dl input[type="text"] { user-select: text; }
 .check { display: flex; align-items: center; gap: 8px; }
 .check input { accent-color: var(--primary); width: 16px; height: 16px; flex: none; }
 .check:has(input:disabled) { color: var(--muted); }
@@ -231,3 +228,13 @@ body.mini-mode { background: var(--surface); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* New download window (confirm.html): the dialog as a whole small window */
+body.confirm-page { background: var(--surface); }
+.confirm { display: flex; flex-direction: column; gap: 14px; height: 100vh; padding: 20px 22px 18px; }
+.confirm h1 { font: 600 17px/1.2 "Segoe UI Variable Display", "Segoe UI", sans-serif; }
+.confirm .nd-head .tag { margin-left: auto; flex: none; }
+.confirm input[type="text"] { user-select: text; }
+.confirm .form-error { padding: 0; }
+.confirm .actions { margin-top: auto; align-items: center; }
+.nd-dont-ask { margin-right: auto; font-size: 13px; color: var(--muted); }

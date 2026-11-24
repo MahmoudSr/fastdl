@@ -1,7 +1,7 @@
 //! Runs the browser-extension endpoint (127.0.0.1:17385) without a window, for test/extension-test.js.
 //! Usage: cargo run --example bridge_check -- <data_dir>
-//! Prints one line per event:  READY | PORT-BUSY | ASK <ticket> <code> <browser> | CLOSED <ticket> | ADDED
-//! Reads answers on stdin:      allow <ticket> | deny <ticket>      (exits when stdin closes)
+//! Prints one line per event:  READY | PORT-BUSY | ASK <ticket> <code> <browser> | CLOSED <ticket> | ADDED ask | ADDED start
+//! Reads commands on stdin:     allow <ticket> | deny <ticket> | stop-asking      (exits when stdin closes)
 
 use fastdl_lib::bridge::{self, PairEvent, Pairing};
 use fastdl_lib::engine::{Emit, Engine};
@@ -16,7 +16,7 @@ fn main() {
         PairEvent::Ask(p) => println!("ASK {} {} {}", p.ticket, p.code, p.browser),
         PairEvent::Closed(t) => println!("CLOSED {t}"),
     }));
-    bridge::start(engine, pairing.clone(), Box::new(|| println!("ADDED")));
+    bridge::start(engine.clone(), pairing.clone(), Box::new(|ask| println!("ADDED {}", if ask { "ask" } else { "start" })));
     if !bridge::READY.load(Ordering::Relaxed) {
         println!("PORT-BUSY");
         return;
@@ -24,6 +24,7 @@ fn main() {
     println!("READY");
     for line in std::io::stdin().lock().lines() {
         let line = line.unwrap_or_default();
+        if line.trim() == "stop-asking" { engine.stop_asking(); println!("ASKING-OFF"); continue; }
         let mut words = line.split_whitespace();
         let (Some(cmd), Some(ticket)) = (words.next(), words.next().and_then(|t| t.parse().ok())) else { continue };
         if let Err(e) = pairing.answer(ticket, cmd == "allow") { println!("ERROR {e}"); }

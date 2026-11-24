@@ -113,6 +113,11 @@ pub struct ItemDto {
     finished: Option<u64>,
 }
 
+impl ItemDto {
+    /// Waiting in the confirm window for you to choose Download, Later or Cancel.
+    pub fn waits_for_answer(&self) -> bool { self.status == Status::Pending }
+}
+
 #[derive(Serialize, Clone)]
 struct Progress { id: u64, done: u64, speed: f64, conns: usize }
 
@@ -462,6 +467,10 @@ impl Engine {
                 done: 0, segs: vec![], error: None, added: now_ms(), finished: None, headers, custom_name: false, validator: None,
             };
             let d = dto(&rec);
+            // Tell every window right away. Otherwise a queued download from the browser only
+            // showed up once it started, and a waiting one only once its file info came in.
+            // (Sent under the lock, so it always comes before the event that it started.)
+            self.send("item", &d);
             inner.items.push(Item { rec, job: None });
             d
         };
@@ -584,9 +593,34 @@ impl Engine {
     pub fn set_settings(self: &Arc<Self>, s: Settings) {
         let s = clamp_settings(s);
         self.limiter.rate.store(s.speed_limit_kbps.saturating_mul(1024), Relaxed);
-        self.inner.lock().unwrap().settings = s;
+        self.inner.lock().unwrap().settings = s.clone();
+        // Every window keeps a copy (the main window saves the whole object from its Settings dialog).
+        self.send("settings", &s);
         self.save();
         self.schedule();
+    }
+
+    /// "Don't ask again" in the confirm window: from now on downloads from the browser start
+    /// right away, and the ones still waiting for an answer start too (with the name and folder
+    /// they'd have got anyway), since you just said you don't want to be asked.
+    pub fn stop_asking(self: &Arc<Self>) {
+        let settings = {
+            let mut inner = self.inner.lock().unwrap();
+            inner.settings.ask_before_download = false;
+            for it in inner.items.iter_mut().filter(|i| i.rec.status == Status::Pending) {
+                it.rec.status = Status::Queued;
+                self.emit_item(&it.rec);
+            }
+            inner.settings.clone()
+        };
+        self.send("settings", &settings);
+        self.save();
+        self.schedule();
+    }
+
+    /// Some download sent from the browser is still waiting for an answer.
+    pub fn has_pending(&self) -> bool {
+        self.inner.lock().unwrap().items.iter().any(|i| i.rec.status == Status::Pending)
     }
 
     pub fn file_path(&self, id: u64) -> Option<(PathBuf, bool)> {
@@ -964,6 +998,110 @@ mod tests {
 
         engine.remove_many(&[], false);
         assert_eq!(events.lock().unwrap().len(), 1, "removing nothing sends nothing");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// An engine in a fresh temp folder that records every event, with downloads that can't
+    /// actually start (max 1 at a time, and the server address refuses connections).
+    fn test_engine(name: &str) -> (Arc<Engine>, Arc<Mutex<Vec<(String, serde_json::Value)>>>, PathBuf) {
+        let dir = std::env::temp_dir().join(format!("fastdl-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let ev = events.clone();
+        let emit: Emit = Box::new(move |name, v| ev.lock().unwrap().push((name.to_string(), v)));
+        let engine = Engine::new(emit, dir.join("state"), dir.to_string_lossy().into_owned());
+        (engine, events, dir)
+    }
+
+    fn status_of(engine: &Engine, id: u64) -> String {
+        let state = serde_json::to_value(engine.state()).unwrap();
+        state["items"].as_array().unwrap().iter().find(|i| i["id"] == id).unwrap()["status"].as_str().unwrap().to_string()
+    }
+
+    #[test]
+    fn browser_downloads_wait_only_while_asking_is_on() {
+        let (engine, _, dir) = test_engine("ask");
+        let mut s = engine.settings();
+        s.ask_before_download = true;
+        engine.set_settings(s.clone());
+        let asked = engine.add("http://127.0.0.1:9/a.bin".into(), vec![], true).unwrap();
+        assert!(asked.waits_for_answer(), "the New download window must show");
+        assert!(engine.has_pending());
+
+        // Downloads added in fastdl itself never wait, whatever the setting.
+        let own = engine.add("http://127.0.0.1:9/b.bin".into(), vec![], false).unwrap();
+        assert!(!own.waits_for_answer());
+
+        s.ask_before_download = false;
+        engine.set_settings(s);
+        let quiet = engine.add("http://127.0.0.1:9/c.bin".into(), vec![], true).unwrap();
+        assert!(!quiet.waits_for_answer(), "no window at all: it just starts");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn every_new_download_is_announced_at_once() {
+        // 0.2.0 bug: with "Ask" off, queued downloads from the browser were missing from the
+        // list until they started (and with 100 queued, that's most of them).
+        let (engine, events, dir) = test_engine("announce");
+        let mut s = engine.settings();
+        s.max_active = 1;
+        s.ask_before_download = false;
+        engine.set_settings(s.clone());
+        let ids: Vec<u64> = (0..3).map(|n| engine.add(format!("http://127.0.0.1:9/q{n}.bin"), vec![], true).unwrap().id).collect();
+        s.ask_before_download = true;
+        engine.set_settings(s);
+        let waiting = engine.add("http://127.0.0.1:9/w.bin".into(), vec![], true).unwrap().id;
+
+        let events = events.lock().unwrap();
+        let first_status = |id: u64| events.iter().find(|(n, v)| n == "item" && v["id"] == id).map(|(_, v)| v["status"].clone());
+        for id in &ids[1..] {
+            assert_eq!(first_status(*id), Some(serde_json::json!("queued")), "queued download {id} is announced");
+        }
+        assert!(first_status(ids[0]).is_some(), "the one that starts is announced too");
+        assert_eq!(first_status(waiting), Some(serde_json::json!("pending")), "the New download window hears at once, before the file info");
+        drop(events);
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn dont_ask_again_starts_everything_waiting() {
+        let (engine, events, dir) = test_engine("stop-asking");
+        let mut s = engine.settings();
+        s.ask_before_download = true;
+        s.max_active = 1;
+        engine.set_settings(s);
+        let ids: Vec<u64> = (0..3).map(|n| engine.add(format!("http://127.0.0.1:9/f{n}.bin"), vec![], true).unwrap().id).collect();
+        events.lock().unwrap().clear();
+
+        engine.stop_asking();
+
+        assert!(!engine.settings().ask_before_download);
+        assert!(!engine.has_pending(), "nothing is left waiting for the window");
+        for id in &ids { assert_ne!(status_of(&engine, *id), "pending"); }
+        let events = events.lock().unwrap();
+        let settings_events: Vec<_> = events.iter().filter(|(n, _)| n == "settings").collect();
+        assert_eq!(settings_events.len(), 1, "every window hears about the change once");
+        assert_eq!(settings_events[0].1["askBeforeDownload"], false);
+        let saved: serde_json::Value = serde_json::from_slice(&std::fs::read(dir.join("state").join("downloads.json")).unwrap()).unwrap();
+        assert_eq!(saved["settings"]["askBeforeDownload"], false, "and it's remembered");
+        drop(events);
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn answering_the_last_download_leaves_nothing_pending() {
+        let (engine, _, dir) = test_engine("answer");
+        let mut s = engine.settings();
+        s.ask_before_download = true;
+        engine.set_settings(s);
+        let a = engine.add("http://127.0.0.1:9/a.bin".into(), vec![], true).unwrap().id;
+        let b = engine.add("http://127.0.0.1:9/b.bin".into(), vec![], true).unwrap().id;
+        engine.confirm(a, "a.bin".into(), dir.to_string_lossy().into_owned(), false).unwrap();
+        assert!(engine.has_pending(), "b still waits, so the window must stay open");
+        engine.remove(b, false);
+        assert!(!engine.has_pending(), "now the window can close");
+        assert_eq!(status_of(&engine, a), "paused", "Later keeps it in the list, paused");
         let _ = std::fs::remove_dir_all(dir);
     }
 

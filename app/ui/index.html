@@ -12,7 +12,6 @@
       <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></symbol>
       <symbol id="i-all" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
       <symbol id="i-active" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
-      <symbol id="i-queue" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
       <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
       <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3v.01"/></symbol>
       <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
@@ -43,8 +42,7 @@
       </div>
       <nav aria-label="Filter by status">
         <button class="nav on" data-status="all"><svg><use href="#i-all"/></svg>All<span class="count" data-count="all"></span></button>
-        <button class="nav" data-status="downloading"><svg><use href="#i-active"/></svg>Active<span class="count" data-count="downloading"></span></button>
-        <button class="nav" data-status="waiting"><svg><use href="#i-queue"/></svg>Queued &amp; paused<span class="count" data-count="waiting"></span></button>
+        <button class="nav" data-status="progress" title="Downloading now, then the queue in the order it will start, then paused"><svg><use href="#i-active"/></svg>In progress<span class="count" data-count="progress"></span></button>
         <button class="nav" data-status="completed"><svg><use href="#i-check"/></svg>Completed<span class="count" data-count="completed"></span></button>
         <button class="nav" data-status="failed"><svg><use href="#i-alert"/></svg>Failed<span class="count" data-count="failed"></span></button>
       </nav>
@@ -90,7 +88,7 @@
 
       <footer class="status">
         <span><svg><use href="#i-down"/></svg><b id="total-speed">0 B/s</b></span>
-        <span id="active-count">0 active</span>
+        <span id="active-count">Nothing downloading</span>
         <span class="spacer"></span>
         <span id="limit-label"></span>
       </footer>
@@ -176,36 +174,6 @@
     </form>
   </dialog>
 
-  <dialog id="new-dl" aria-labelledby="nd-title">
-    <form method="dialog" id="nd-form">
-      <div class="nd-head">
-        <div class="ftype"><svg><use id="nd-icon" href="#t-file"/></svg></div>
-        <div class="nd-head-text">
-          <h2 id="nd-title">New download</h2>
-          <p class="nd-from" id="nd-from"></p>
-        </div>
-      </div>
-      <div class="field">
-        <label for="nd-name">File name</label>
-        <input id="nd-name" type="text" required spellcheck="false">
-      </div>
-      <div class="field">
-        <label for="nd-dir">Save to</label>
-        <div class="row">
-          <input id="nd-dir" type="text" readonly>
-          <button type="button" class="btn" id="nd-browse"><svg><use href="#i-folder"/></svg>Browse</button>
-        </div>
-      </div>
-      <p class="nd-info" id="nd-info" aria-live="polite"></p>
-      <p class="form-error" id="nd-error" role="alert" hidden></p>
-      <div class="actions">
-        <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
-        <button class="btn" value="later">Later</button>
-        <button class="btn primary" value="start" id="nd-start"><svg><use href="#i-down"/></svg>Download</button>
-      </div>
-    </form>
-  </dialog>
-
   <dialog id="confirm-remove" aria-labelledby="rm-title">
     <form method="dialog">
       <h2 id="rm-title">Remove download?</h2>
@@ -245,6 +213,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="shared.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
