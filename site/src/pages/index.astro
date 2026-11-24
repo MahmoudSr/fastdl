@@ -1,0 +1,398 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Icon from '../components/Icon.astro';
+import { getRelease, REPO_URL } from '../lib/release';
+
+const release = await getRelease();
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const guide = `${base}guide/`;
+
+const features = [
+  {
+    title: 'Every connection busy to the end',
+    text: 'Files are split into pieces that download side by side. When a piece finishes early, fastdl splits the biggest piece left, so no connection sits idle while one slow piece drags on.',
+  },
+  {
+    title: 'Pause and resume',
+    text: 'Stop a download and pick it up later, even after closing fastdl or restarting your PC, when the server supports it. fastdl checks the file has not changed on the server before it carries on.',
+  },
+  {
+    title: 'Takes your browser downloads',
+    text: 'The extension for Chrome, Edge, Brave, Opera and other Chromium browsers hands downloads to fastdl. The browser’s own Save as window never appears. If fastdl isn’t running, the browser downloads as usual.',
+  },
+  {
+    title: 'Ask, or just start',
+    text: 'A small New download window can ask where to save each file. Tick Don’t ask again and downloads start silently, with no window at all.',
+  },
+  {
+    title: 'See what’s next',
+    text: 'In progress lists what is downloading now, then the queue in the order it will start, then what is paused. Set how many run at once, and a speed limit if you need one.',
+  },
+  {
+    title: 'Mini view and the tray',
+    text: 'Ctrl+M shrinks fastdl to a small always-on-top bar. Closing the window keeps it running next to the clock, so browser downloads still reach it.',
+  },
+  {
+    title: 'Portable',
+    text: 'Unzip it on a USB stick and everything stays in a data folder next to fastdl.exe. Nothing is written to the PC.',
+  },
+  {
+    title: 'Small',
+    text: `The Windows installer is ${release.windows.size || 'under 2 MB'} and fastdl uses about 30 MB of memory. Dark and light themes, or follow your system.`,
+  },
+];
+
+// The dot-matrix face draws "." like a plus sign; set it in the display face.
+const led = (text: string) => text.replace(/\./g, '<span class="sep">.</span>');
+
+const rules = [
+  ['Eight connections by default.', 'Many servers limit how many connections one person may open, so fastdl stays within it.'],
+  ['Four at once, then one at a time.', 'fastdl opens 4 connections together (browsers use up to 6 per site), then adds the rest one by one.'],
+  ['Stop when a server says stop.', 'As soon as a server refuses a connection, fastdl stops adding more and closes the extras.'],
+  ['Wait when asked to wait.', 'When a server sends Retry-After, fastdl waits that long.'],
+  ['Say who you are.', 'fastdl identifies itself as fastdl, with its version, instead of pretending to be a browser.'],
+];
+---
+<Base
+  title="fastdl: a fast, free download manager for Windows and Mac"
+  description="fastdl downloads files over several connections at once, takes your browser downloads, and stays small. Free and open source."
+  page="home"
+>
+  <Hero release={release} />
+
+  <!-- Heat results: the measured numbers. -->
+  <section class="results wall" id="results" aria-labelledby="results-title">
+    <div class="wrap results-grid">
+      <div class="results-copy">
+        <h2 id="results-title">Heat results</h2>
+        <p>
+          Measured on a local test server that allows about 2 MB/s per connection, like many real
+          download servers do.
+        </p>
+        <p>
+          On a server with no such limit, or when your internet line is the slowest part, every tool
+          downloads at the same speed. No download manager can beat your line speed.
+        </p>
+        <p><a class="link-arrow" href={`${REPO_URL}#speed`}>How to run the test yourself <Icon name="arrow" /></a></p>
+      </div>
+      <div class="results-board">
+        <table>
+          <caption class="sr-only">Download times on the test server</caption>
+          <thead>
+            <tr><th scope="col">Lanes</th><th scope="col">Who</th><th scope="col">File</th><th scope="col">Time</th><th scope="col">Speed</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>8</td><th scope="row">fastdl</th><td>60 MB</td><td set:html={led('4.9 s')} /><td set:html={led('12.2 MB/s')} /></tr>
+            <tr><td>8</td><th scope="row">fastdl</th><td>250 MB</td><td set:html={led('19.0 s')} /><td set:html={led('13.1 MB/s')} /></tr>
+            <tr class="dim"><td>1</td><th scope="row">One connection, like a browser</th><td>any</td><td><span aria-label="not timed">–</span></td><td set:html={led('1.7 MB/s')} /></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- The app itself. -->
+  <section class="app deck" aria-labelledby="app-title">
+    <div class="wrap app-grid">
+      <h2 id="app-title">One window for everything you download</h2>
+      <p>Paste a link or click one in your browser. fastdl sorts downloads by type, shows each piece’s progress, and opens the file when it’s done.</p>
+      <figure>
+        <img src={`${base}app-window.png`} width="2080" height="1320" loading="lazy" decoding="async"
+          alt="The fastdl window in dark theme: a list of downloads with progress bars, speeds and time left, and a sidebar with filters by status and file type." />
+      </figure>
+    </div>
+  </section>
+
+  <!-- Eight features, one per lane. -->
+  <section class="lanes water" aria-labelledby="lanes-title">
+    <div class="lanes-head wrap">
+      <h2 id="lanes-title">Eight lanes, eight things it does well</h2>
+    </div>
+    <ol class="lane-list">
+      {features.map((f, i) => (
+        <li class="feature">
+          {i > 0 && <div class:list={['rope', { alt: i % 2 === 0 }]} aria-hidden="true"></div>}
+          <div class="feature-row">
+            <span class="feature-block" aria-hidden="true">{i + 1}</span>
+            <h3>{f.title}</h3>
+            <p>{f.text}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- Pool rules: polite to servers. -->
+  <section class="rules wall" aria-labelledby="rules-title">
+    <div class="wrap rules-grid">
+      <div class="rules-intro">
+        <h2 id="rules-title">It won’t get your IP blocked</h2>
+        <p>Some servers temporarily ban addresses that open too many connections. fastdl follows the rules of the pool.</p>
+      </div>
+      <div class="sign">
+        <p class="sign-head" aria-hidden="true">Pool rules</p>
+        <ol>
+          {rules.map(([rule, why]) => (
+            <li><strong>{rule}</strong> {why}</li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Three steps. -->
+  <section class="steps deck" aria-labelledby="steps-title">
+    <div class="wrap">
+      <h2 id="steps-title">Set up in three steps</h2>
+      <ol class="step-list">
+        <li>
+          <h3>Install fastdl</h3>
+          <p>
+            Run the installer. fastdl isn’t code-signed yet, so Windows may say
+            “Windows protected your PC”. Click <strong>More info</strong>, then <strong>Run anyway</strong>.
+            On a Mac, right-click fastdl and choose <strong>Open</strong> the first time.
+          </p>
+          <a class="btn btn-cap" href={release.windows.url}><Icon name="download" /> Windows installer</a>
+        </li>
+        <li>
+          <h3>Add the extension</h3>
+          <p>
+            It isn’t in the extension stores yet. Download it, open <code>chrome://extensions</code>,
+            turn on <strong>Developer mode</strong> and load it. The guide shows each click.
+          </p>
+          <div class="step-links">
+            <a class="btn btn-line" href={release.extensionZip.url}><Icon name="download" /> Extension (.zip)</a>
+            <a href={release.crx.url}>.crx for Ungoogled Chromium{release.crx.size && ` (${release.crx.size})`}</a>
+          </div>
+        </li>
+        <li>
+          <h3>Connect once</h3>
+          <p>
+            fastdl asks “Allow this browser to connect?” and shows a 4-digit code. If the extension
+            shows the same code, click <strong>Allow</strong>. That’s all.
+          </p>
+          <div class="codes" aria-hidden="true">
+            <span><small>fastdl</small>4821</span>
+            <span><small>extension</small>4821</span>
+          </div>
+        </li>
+      </ol>
+      <p class="steps-more"><a class="link-arrow" href={guide}>Read the full guide <Icon name="arrow" /></a></p>
+    </div>
+  </section>
+
+  <!-- Open source and security. -->
+  <section class="open wall" aria-labelledby="open-title">
+    <div class="wrap open-grid">
+      <div>
+        <h2 id="open-title">Open, all the way down</h2>
+        <p>
+          fastdl is free and open source under the GPL-3.0 license: no trial, no ads, no account.
+          Every release is built by GitHub Actions from the public code, so what you download is what
+          you can read.
+        </p>
+        <p><a class="link-arrow" href={REPO_URL}>Read the source on GitHub <Icon name="external" /></a></p>
+      </div>
+      <ul class="safety">
+        <li><strong>Websites can’t add downloads.</strong> The extension talks to fastdl only on your own PC, and fastdl accepts only the fastdl extension.</li>
+        <li><strong>Paired with a key.</strong> Every request from the extension is signed, so other programs can’t read your links or add downloads.</li>
+        <li><strong>Files are marked as downloaded.</strong> Windows SmartScreen and Office Protected View still check them, as with browser downloads.</li>
+        <li><strong>Names are cleaned.</strong> No hidden characters that could disguise <code>invoice.exe</code> as <code>invoice.pdf</code>.</li>
+        <li><strong>Cookies only if you say so.</strong> Sending login cookies is off by default, and they are kept in memory only.</li>
+      </ul>
+      <p class="open-more"><a class="link-arrow" href={`${guide}#security`}>How the security works <Icon name="arrow" /></a></p>
+    </div>
+  </section>
+
+  <!-- The far wall. -->
+  <section class="finish water" aria-labelledby="finish-title">
+    <div class="wrap finish-inner">
+      <span class="finish-pad" aria-hidden="true"></span>
+      <div>
+        <h2 id="finish-title">Download fastdl</h2>
+        <p>
+          {release.version ? `Version ${release.version}` : 'The latest version'}{release.date && `, released ${release.date}`}.
+          Windows 10 and 11, and macOS.
+        </p>
+        <div class="finish-links">
+          <a class="btn btn-cap" href={release.windows.url}><Icon name="download" /> Windows installer{release.windows.size && ` · ${release.windows.size}`}</a>
+          <a class="btn btn-line" href={release.portable.url}>Portable .zip{release.portable.size && ` · ${release.portable.size}`}</a>
+          <a class="btn btn-line" href={release.mac.url}>Mac .dmg{release.mac.size && ` · ${release.mac.size}`}</a>
+        </div>
+        <p class="finish-note"><a href={release.pageUrl}>Release notes</a> · <a href={`${REPO_URL}/releases`}>All releases</a></p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  section { position: relative; }
+  h2 { font-size: clamp(2.6rem, 5.6vw, 4.4rem); }
+
+  /* Results */
+  .results { padding-block: clamp(64px, 10vw, 120px); }
+  .results-grid {
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+  .results-copy p { margin-top: 16px; max-width: 46ch; color: var(--on-wall-soft); }
+  .results-copy p:first-of-type { margin-top: 22px; color: var(--on-wall); font-size: 1.15rem; }
+  .results-copy a { color: var(--on-wall); }
+  .results-board {
+    background: var(--board); border: 2px solid var(--board-edge); border-radius: 8px;
+    padding: clamp(16px, 2.4vw, 28px); color: var(--led);
+    box-shadow: 0 24px 48px -24px rgb(0 20 30 / 0.55);
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  thead th {
+    font: 600 0.95rem/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--led-soft); text-align: left; padding: 0 12px 12px 0; border-bottom: 1px solid #1d272c;
+  }
+  tbody td, tbody th {
+    font: 800 clamp(1.25rem, 2.3vw, 1.9rem)/1.1 var(--digits); text-align: left;
+    padding: 14px 12px 14px 0; border-bottom: 1px solid #12191d; white-space: nowrap;
+    text-shadow: 0 0 10px rgb(255 176 0 / 0.4);
+  }
+  .results-board :global(.sep) { font-family: var(--display); }
+  tbody th { font-family: var(--display); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-shadow: none; }
+  tbody tr.dim td, tbody tr.dim th { color: #c3a25a; text-shadow: none; }
+  tbody tr.dim th { white-space: normal; font-size: 1.05rem; max-width: 16ch; }
+
+  /* App screenshot */
+  .app { padding-block: clamp(64px, 9vw, 112px) 0; overflow: hidden; }
+  .app-grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 20px 56px; align-items: end; }
+  .app h2 { color: var(--on-deck); }
+  .app-grid > p { color: var(--on-deck-soft); max-width: 44ch; font-size: 1.1rem; }
+  .app figure {
+    grid-column: 1 / -1; margin-top: clamp(24px, 4vw, 48px);
+    border-radius: 12px 12px 0 0; overflow: hidden;
+    border: 2px solid var(--deck-line); border-bottom: 0;
+    max-height: 560px;
+  }
+  .app img { width: 100%; height: auto; }
+
+  /* Feature lanes */
+  .lanes { padding-block: clamp(56px, 8vw, 96px) 0; }
+  .lanes::before, .finish::before {
+    /* The pool edge, then a lane rope, where a water section begins. */
+    content: ""; position: absolute; inset: 0 0 auto; height: 32px;
+    background:
+      radial-gradient(circle at 50% 42%, rgb(255 255 255 / 0.55) 0 1.5px, transparent 2px) 0 22px / 14px 10px repeat-x,
+      repeating-linear-gradient(90deg, var(--rope) 0 13px, transparent 13px 14px, var(--rope-2) 14px 27px, transparent 27px 28px) 0 22px / 100% 10px no-repeat,
+      linear-gradient(var(--deck-2), var(--deck-2)) 0 0 / 100% 22px no-repeat;
+  }
+  .lanes-head { padding-bottom: clamp(28px, 4vw, 44px); }
+  .lanes h2 { max-width: 16ch; }
+  .lane-list { list-style: none; padding: 0; }
+  .feature-row {
+    display: grid;
+    grid-template-columns: clamp(48px, 6vw, 84px) minmax(0, 4fr) minmax(0, 6fr);
+    gap: 8px clamp(20px, 3.2vw, 48px);
+    align-items: center;
+    padding-right: var(--gutter);
+    min-height: 112px;
+  }
+  .feature-block {
+    align-self: stretch; display: grid; place-items: center;
+    background: var(--deck-2); color: var(--on-deck);
+    font: 800 clamp(1.8rem, 3.4vw, 2.8rem)/1 var(--display);
+    border-right: 5px solid var(--cap);
+  }
+  .feature h3 { font-size: clamp(1.7rem, 2.8vw, 2.4rem); padding-block: 20px; }
+  .feature p { max-width: 62ch; padding-block: 18px; color: var(--on-water); }
+
+  /* Rules */
+  .rules { padding-block: clamp(64px, 10vw, 120px); }
+  .rules-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px clamp(32px, 5vw, 72px); align-items: start; }
+  .rules-intro p { margin-top: 20px; max-width: 40ch; font-size: 1.15rem; color: var(--on-wall-soft); }
+  .sign {
+    background: #ffffff; color: #0b2230;
+    border: 3px solid #0b2230; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 2px 0 #c7d6d6, 0 22px 40px -24px rgb(0 30 40 / 0.45);
+  }
+  .sign-head {
+    background: var(--rope); color: #fff;
+    font: 800 clamp(1.8rem, 3.4vw, 2.6rem)/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase;
+    text-align: center; padding: 14px 20px 12px;
+  }
+  .sign ol { padding: 22px clamp(20px, 3vw, 36px) 26px clamp(44px, 5vw, 60px); display: grid; gap: 14px; }
+  .sign li { padding-left: 6px; }
+  .sign li::marker { font: 800 1.35rem var(--display); color: var(--rope); }
+  .sign strong { font-weight: 700; }
+
+  /* Steps */
+  .steps { padding-block: clamp(64px, 10vw, 120px); }
+  .steps h2 { color: var(--on-deck); }
+  .step-list {
+    list-style: none; padding: 0; margin-top: clamp(32px, 5vw, 56px);
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); gap: 0;
+    counter-reset: step;
+    border-top: 2px solid var(--deck-line);
+  }
+  .step-list > li {
+    counter-increment: step;
+    padding: 28px clamp(20px, 2.6vw, 36px) 8px 0;
+    display: grid; grid-row: span 3; grid-template-rows: subgrid; gap: 14px; align-items: start; justify-items: start;
+  }
+  .step-list > li + li { padding-left: clamp(20px, 2.6vw, 36px); border-left: 2px solid var(--deck-line); }
+  .step-list h3 { font-size: clamp(1.7rem, 2.6vw, 2.2rem); color: var(--on-deck); }
+  .step-list h3::before {
+    content: counter(step); display: block; margin-bottom: 10px;
+    font: 800 3.4rem/1 var(--display); color: var(--cap);
+  }
+  .step-list p { color: var(--on-deck-soft); max-width: 40ch; }
+  .step-list strong { color: var(--on-deck); }
+  .step-list .btn { font-size: 1.15rem; min-height: 48px; }
+  .step-links { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; color: var(--on-deck); }
+  .step-links > a:not(.btn) { color: var(--on-deck-soft); font-size: 0.95rem; }
+  .codes { display: flex; gap: 12px; }
+  .codes span {
+    display: grid; gap: 6px; background: var(--board); color: var(--led); border: 2px solid var(--board-edge);
+    border-radius: 8px; padding: 10px 14px; font: 800 2rem/1 var(--digits);
+    text-shadow: 0 0 10px rgb(255 176 0 / 0.4); letter-spacing: 0.06em;
+  }
+  .codes small { font: 600 0.8rem/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--led-soft); text-shadow: none; }
+  .steps-more { margin-top: 40px; }
+  .steps-more a { color: var(--cap); font-size: 1.1rem; }
+
+  /* Open */
+  .open { padding-block: clamp(64px, 10vw, 120px); }
+  .open-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px clamp(32px, 5vw, 72px); align-items: start; }
+  .open-grid > div p { margin-top: 20px; max-width: 44ch; color: var(--on-wall-soft); font-size: 1.1rem; }
+  .open-grid > div p a { color: var(--on-wall); }
+  .safety { list-style: none; padding: 0; display: grid; gap: 0; border-top: 2px solid var(--on-wall); }
+  .safety li { padding: 16px 0; border-bottom: 1px solid var(--wall-grout); color: var(--on-wall-soft); }
+  .safety strong { color: var(--on-wall); display: block; font-size: 1.08rem; }
+  .open-more { grid-column: 2; }
+  .open-more a { color: var(--on-wall); }
+
+  /* Finish */
+  .finish { padding-block: clamp(80px, 11vw, 128px) clamp(64px, 10vw, 112px); }
+  .finish-inner { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: stretch; }
+  .finish-pad { width: 14px; background: var(--cap); border-radius: 3px; box-shadow: 0 4px 10px rgb(0 30 40 / 0.3); }
+  .finish h2 { font-size: clamp(3rem, 7vw, 6rem); }
+  .finish p { margin-top: 14px; font-size: 1.15rem; }
+  .finish-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .finish .btn-line { color: var(--on-water); }
+  .finish-note { font-size: 1rem !important; }
+
+  @media (max-width: 900px) {
+    .results-grid, .rules-grid, .open-grid, .app-grid { grid-template-columns: 1fr; }
+    .open-more { grid-column: 1; }
+    .step-list { grid-template-columns: 1fr; grid-template-rows: none; }
+    .step-list > li { grid-row: auto; grid-template-rows: none; }
+    .step-list > li + li { padding-left: 0; border-left: 0; border-top: 2px solid var(--deck-line); }
+    .step-list > li { padding-bottom: 28px; }
+    .feature-row { grid-template-columns: clamp(44px, 12vw, 64px) minmax(0, 1fr); }
+    .feature h3 { padding-block: 18px 0; }
+    .feature p { grid-column: 2; padding-block: 6px 20px; }
+    .feature-block { grid-row: span 2; }
+  }
+  @media (max-width: 560px) {
+    thead th:first-child, tbody td:first-child { display: none; }
+    .finish-inner { grid-template-columns: 1fr; }
+    .finish-pad { width: 64px; height: 10px; }
+  }
+</style>

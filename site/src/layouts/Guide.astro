@@ -1,0 +1,120 @@
+---
+import Base from './Base.astro';
+
+interface Props {
+  frontmatter: { title: string; description: string; lede: string };
+  headings: { depth: number; slug: string; text: string }[];
+}
+const { frontmatter, headings } = Astro.props;
+const toc = headings.filter((h) => h.depth === 2);
+---
+<Base title={`${frontmatter.title} · fastdl`} description={frontmatter.description} page="guide">
+  <div class="guide-head deck">
+    <div class="wrap">
+      <h1>{frontmatter.title}</h1>
+      <p>{frontmatter.lede}</p>
+    </div>
+  </div>
+  <div class="coping" aria-hidden="true"></div>
+  <div class="guide-body wall">
+    <div class="wrap guide-grid">
+      <nav class="toc" aria-label="On this page">
+        <p class="toc-title">On this page</p>
+        <ol>
+          {toc.map((h, i) => (
+            <li><a href={`#${h.slug}`}><span aria-hidden="true">{i + 1}</span>{h.text}</a></li>
+          ))}
+        </ol>
+      </nav>
+      <article class="prose">
+        <slot />
+      </article>
+    </div>
+  </div>
+</Base>
+
+<script>
+  // Mark the section being read in the contents list.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
+  const sections = links
+    .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
+    .filter((h): h is HTMLElement => !!h);
+  let queued = false;
+  function update() {
+    queued = false;
+    const line = 120;
+    let current = 0;
+    sections.forEach((h, i) => { if (h.getBoundingClientRect().top <= line) current = i; });
+    // At the very bottom, the last section is the one being read.
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) current = sections.length - 1;
+    links.forEach((a, i) => {
+      if (i === current) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+  }
+  addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+  addEventListener('hashchange', update);
+  update();
+</script>
+
+<style>
+  .guide-head { padding-block: clamp(40px, 7vw, 88px) clamp(32px, 5vw, 56px); }
+  .guide-head h1 { font-size: clamp(3rem, 7vw, 5.4rem); color: var(--on-deck); }
+  .guide-head p { margin-top: 16px; max-width: 58ch; color: var(--on-deck-soft); font-size: 1.15rem; }
+  .guide-body { padding-block: clamp(40px, 6vw, 80px) clamp(64px, 9vw, 112px); }
+  .guide-grid { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+
+  /* Sticks exactly where headings land after a jump (scroll padding + margin), so it never shifts. */
+  .toc { position: sticky; top: 48px; }
+  .toc-title { font: 600 0.95rem/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--on-wall-soft); }
+  .toc ol { list-style: none; padding: 0; margin-top: 12px; display: grid; gap: 2px; border-left: 2px solid var(--wall-grout); }
+  .toc a {
+    display: grid; grid-template-columns: 1.6em 1fr; gap: 4px; padding: 6px 10px;
+    text-decoration: none; color: var(--on-wall-soft); font-size: 0.98rem; line-height: 1.35;
+    margin-left: -2px; border-left: 2px solid transparent;
+  }
+  .toc a span { font: 800 1.05rem/1.3 var(--display); color: var(--on-wall-soft); }
+  .toc a:hover { color: var(--on-wall); border-left-color: var(--on-wall-soft); }
+  /* No weight change: bolder text could wrap and move the list. */
+  .toc a[aria-current="true"] {
+    color: var(--on-wall); border-left-color: var(--on-wall);
+    background: color-mix(in srgb, var(--cap) 30%, transparent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .toc a[aria-current="true"] { background: color-mix(in srgb, var(--water) 55%, var(--wall)); }
+  }
+  :global(:root[data-theme="dark"]) .toc a[aria-current="true"] { background: color-mix(in srgb, var(--water) 55%, var(--wall)); }
+  .toc a[aria-current="true"] span { color: var(--on-wall); }
+
+  .prose { max-width: 72ch; }
+  .prose :global(h2) {
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    margin-top: 72px; padding-top: 20px; border-top: 2px solid var(--on-wall);
+    scroll-margin-top: 24px;
+  }
+  .prose :global(h2:first-child) { margin-top: 0; }
+  .prose :global(h3) { font-size: 1.7rem; margin-top: 36px; scroll-margin-top: 24px; }
+  .prose :global(p), .prose :global(ul), .prose :global(ol) { margin-top: 14px; }
+  .prose :global(li) { margin-top: 6px; }
+  .prose :global(li::marker) { color: var(--on-wall-soft); font-weight: 700; }
+  .prose :global(a) { color: var(--on-wall); }
+  .prose :global(strong) { font-weight: 700; }
+  .prose :global(pre) {
+    margin-top: 14px; padding: 14px 16px; border-radius: 8px; overflow-x: auto;
+    background: var(--deck); color: var(--on-deck); font: 0.92rem/1.55 var(--code);
+  }
+  .prose :global(pre code) { background: none; padding: 0; }
+  .prose :global(table) { margin-top: 16px; border-collapse: collapse; width: 100%; font-size: 0.98rem; }
+  .prose :global(th), .prose :global(td) { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--wall-grout); vertical-align: top; }
+  .prose :global(th) { font: 600 0.95rem/1.2 var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-wall-soft); border-bottom: 2px solid var(--on-wall); }
+  .prose :global(blockquote) {
+    margin-top: 18px; padding: 14px 18px; border: 2px solid var(--on-wall); border-radius: 8px;
+    background: color-mix(in srgb, var(--cap) 22%, var(--wall));
+  }
+  .prose :global(blockquote p:first-child) { margin-top: 0; }
+
+  @media (max-width: 900px) {
+    .guide-grid { grid-template-columns: 1fr; }
+    .toc { position: static; }
+  }
+</style>

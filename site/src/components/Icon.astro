@@ -1,0 +1,10 @@
+---
+// A few line icons, drawn on one 24px grid with a 2px stroke.
+interface Props { name: 'download' | 'arrow' | 'external'; }
+const { name } = Astro.props;
+---
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {name === 'download' && (<><path d="M12 3.5v12" /><path d="m6.5 10.5 5.5 5.5 5.5-5.5" /><path d="M4.5 20.5h15" /></>)}
+  {name === 'arrow' && (<><path d="M4 12h15" /><path d="m13 6 6 6-6 6" /></>)}
+  {name === 'external' && (<><path d="M14 4h6v6" /><path d="M20 4 11 13" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></>)}
+</svg>

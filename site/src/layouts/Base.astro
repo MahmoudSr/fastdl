@@ -1,0 +1,69 @@
+---
+import '@fontsource/big-shoulders-display/latin-800';
+import '@fontsource/big-shoulders-display/latin-600';
+import '@fontsource/atkinson-hyperlegible-next/latin-400';
+import '@fontsource/atkinson-hyperlegible-next/latin-700';
+import '@fontsource/doto/latin-800';
+import '../styles/global.css';
+import { REPO_URL } from '../lib/release';
+
+interface Props {
+  title: string;
+  description: string;
+  page: 'home' | 'guide' | 'other';
+}
+const { title, description, page } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(`${base}app-window.png`, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" sizes="32x32" href={`${base}favicon-32.png`} />
+    <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
+    <meta name="theme-color" content="#0b2230" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="deck">
+      <nav class="site-nav wrap" aria-label="Main">
+        <a class="brand" href={base}>
+          <img src={`${base}icon-128.png`} alt="" width="34" height="34" />
+          fastdl
+        </a>
+        <ul>
+          <li><a href={`${base}guide/`} aria-current={page === 'guide' ? 'page' : undefined}>Guide</a></li>
+          <li class="hide-sm"><a href={REPO_URL}>GitHub</a></li>
+          <li><a class="nav-cta" href={`${base}#download`}>Download</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer deck">
+      <div class="wrap row">
+        <p>fastdl is free software under the GPL-3.0 license. You can use, study, change and share it. Releases are built by GitHub Actions from the public code.</p>
+        <ul aria-label="More">
+          <li><a href={`${base}guide/`}>Guide</a></li>
+          <li><a href={`${REPO_URL}/releases`}>All releases</a></li>
+          <li><a href={REPO_URL}>Source code</a></li>
+          <li><a href={`${REPO_URL}/issues`}>Report a problem</a></li>
+          <li><a href={`${REPO_URL}/blob/main/LICENSE`}>License</a></li>
+        </ul>
+      </div>
+    </footer>
+  </body>
+</html>

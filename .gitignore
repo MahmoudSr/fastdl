@@ -20,3 +20,8 @@ dist/
 Thumbs.db
 .vscode/
 .idea/
+
+# Website build output
+site/dist/
+site/.astro/
+.impeccable/hook.cache.json

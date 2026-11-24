@@ -1,0 +1,416 @@
+---
+import Icon from './Icon.astro';
+import type { Release } from '../lib/release';
+
+interface Props { release: Release; }
+const { release } = Astro.props;
+const lanes = [1, 2, 3, 4, 5, 6, 7, 8];
+const versionLine = release.version ? `fastdl ${release.version}` : 'Latest version';
+---
+<section class="hero deck" aria-labelledby="hero-title" id="download">
+  <div class="hero-deck wrap">
+    <h1 id="hero-title">Eight lanes. <span>One file.</span></h1>
+    <div class="hero-copy">
+      <p class="hero-lede">
+        fastdl is a free download manager for Windows and Mac. It splits each file into pieces and
+        downloads them over eight connections at once, so big files often arrive much faster than in your browser.
+      </p>
+      <div class="get" data-get>
+        <a class="btn btn-cap" href={release.windows.url} data-primary data-mac-url={release.mac.url} data-mac-size={release.mac.size}>
+          <Icon name="download" />
+          <span data-primary-label>Download for Windows</span>
+        </a>
+        <div class="get-text">
+          <p data-primary-meta>{versionLine}{release.windows.size && ` · ${release.windows.size} installer`} · free and open source</p>
+          <p class="get-alt">
+            <span data-alt-mac>Also for <a href={release.mac.url}>Mac{release.mac.size && ` (${release.mac.size})`}</a> and </span>
+            <span data-alt-win hidden>Also as a <a href={release.windows.url}>Windows installer{release.windows.size && ` (${release.windows.size})`}</a> and a </span>
+            <a href={release.portable.url}>portable Windows zip{release.portable.size && ` (${release.portable.size})`}</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="board" data-board>
+      <p class="board-title">Speed test replay</p>
+      <dl class="board-rows">
+        <div><dt>Speed</dt><dd data-speed>00.0</dd><dd class="unit">MB/s</dd></div>
+        <div><dt>Done</dt><dd data-done>000</dd><dd class="unit">of 250 MB</dd></div>
+        <div><dt>Time</dt><dd data-time>00:00.0</dd><dd class="unit">min:s</dd></div>
+      </dl>
+      <div class="board-controls">
+        <div class="heat-switch" role="radiogroup" aria-label="Who downloads the file">
+          <button type="button" role="radio" aria-checked="true" data-mode="fastdl">fastdl · 8 lanes</button>
+          <button type="button" role="radio" aria-checked="false" data-mode="browser">Browser · 1 lane</button>
+        </div>
+        <button type="button" class="board-play" data-play aria-label="Pause the replay">Pause</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="coping coping-top" aria-hidden="true"></div>
+  <div class="pool water" data-pool aria-hidden="true">
+    {lanes.map((n, i) => (
+      <>
+        {i > 0 && <div class:list={['rope', { alt: i % 2 === 0 }]}></div>}
+        <div class="lane" data-lane={i}>
+          <span class="block">{n}</span>
+          <div class="track">
+            <span class="floor-line"></span>
+            <span class="wake"></span>
+            <span class="pad"></span>
+            <span class="swimmer"></span>
+            <span class="lane-speed"></span>
+          </div>
+        </div>
+      </>
+    ))}
+  </div>
+  <div class="coping coping-bottom" aria-hidden="true"></div>
+  <p class="pool-note wrap">
+    <span class="sr-only">The picture above replays a speed test as eight swimming lanes. </span>
+    A 250 MB file from a test server that allows about 2 MB/s per connection. Measured: fastdl took 19.0 s,
+    one browser-style connection got 1.7 MB/s. Each lane is one connection; when one finishes early,
+    it takes over half of the biggest piece left. <a href="#results">See the results</a>
+  </p>
+</section>
+
+<style>
+  .hero { position: relative; }
+  .hero-deck {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+    grid-template-areas: "title title" "copy board";
+    gap: 20px clamp(32px, 5vw, 72px);
+    align-items: end;
+    padding-block: clamp(12px, 3vh, 36px) clamp(20px, 3.4vh, 36px);
+  }
+  h1 {
+    grid-area: title;
+    font-size: clamp(3.2rem, 7.6vw, 6rem);
+    color: var(--on-deck);
+    letter-spacing: -0.01em;
+  }
+  h1 span { white-space: nowrap; color: var(--cap); }
+  .hero-copy { grid-area: copy; }
+  .board { grid-area: board; }
+  .hero-lede {
+    max-width: 58ch;
+    color: var(--on-deck-soft);
+    font-size: 1.125rem;
+  }
+  .get { margin-top: 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+  .get-text { color: var(--on-deck-soft); font-size: 0.95rem; line-height: 1.5; }
+  .get-alt a { color: var(--on-deck); }
+
+  /* The timing board. */
+  .board {
+    background: var(--board);
+    border: 2px solid var(--board-edge);
+    border-radius: 8px;
+    padding: 14px 18px 14px;
+    color: var(--led);
+    box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.7);
+    font-variant-numeric: tabular-nums;
+  }
+  .board-title {
+    font: 600 0.95rem/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--led-soft);
+  }
+  .board-rows {
+    margin-top: 12px; display: grid; grid-template-columns: 0.9fr 1fr 1.25fr; gap: 0 16px;
+    padding-bottom: 12px; border-bottom: 1px solid #1a2328;
+  }
+  .board-rows > div { display: grid; gap: 6px; align-content: start; }
+  .board-rows dt, .board-rows .unit {
+    font: 600 0.85rem/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--led-soft);
+  }
+  .board-rows dd:not(.unit) {
+    font: 800 clamp(1.7rem, 2.6vw, 2.2rem)/1 var(--digits);
+    text-shadow: 0 0 10px rgb(255 176 0 / 0.45);
+    white-space: nowrap;
+  }
+  .board :global(.sep) { font-family: var(--display); font-weight: 800; margin-inline: 0.02em; }
+  .board-controls { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .heat-switch { display: flex; border: 1px solid #2a3439; border-radius: 6px; overflow: hidden; }
+  .heat-switch button, .board-play {
+    background: transparent; border: 0; color: #d9c79a; cursor: pointer;
+    font: 600 1rem/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 10px 12px; min-height: 40px;
+  }
+  .heat-switch button + button { border-left: 1px solid #2a3439; }
+  .heat-switch button[aria-checked="true"] { background: var(--led); color: var(--board); }
+  .heat-switch button:hover:not([aria-checked="true"]), .board-play:hover { background: #141c20; }
+  .board-play { border: 1px solid #2a3439; border-radius: 6px; margin-left: auto; }
+
+  /* The pool. */
+  .pool {
+    --lane-h: clamp(22px, calc((100svh - 560px) / 8), 60px);
+    --block-w: clamp(40px, 5vw, 68px);
+    /* Everything in a lane scales with its height, so short screens stay tidy. */
+    --swim: min(22px, calc(var(--lane-h) * 0.55));
+    --rope-h: clamp(6px, calc(var(--lane-h) * 0.22), 10px);
+    position: relative;
+    padding-block: 6px;
+    overflow: hidden;
+  }
+  .pool .rope, .pool .rope.alt {
+    height: var(--rope-h);
+    background-size: 14px var(--rope-h), 100% var(--rope-h);
+  }
+  .lane {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--block-w) 1fr;
+    height: var(--lane-h);
+  }
+  .block {
+    display: grid; place-items: center;
+    background: var(--deck-2);
+    color: var(--on-deck);
+    font: 800 min(2.1rem, calc(var(--lane-h) * 0.74))/1 var(--display);
+    border-right: 4px solid var(--cap);
+  }
+  .track { position: relative; margin-right: clamp(12px, 2vw, 28px); }
+  .floor-line {
+    position: absolute; left: 4%; right: 4%; top: 50%; height: clamp(4px, calc(var(--lane-h) * 0.15), 8px); translate: 0 -50%;
+    background: var(--floor-line); border-radius: 2px;
+  }
+  .floor-line::before, .floor-line::after {
+    content: ""; position: absolute; top: 50%; width: clamp(4px, calc(var(--lane-h) * 0.15), 8px); height: calc(var(--lane-h) * 0.5);
+    translate: 0 -50%; background: var(--floor-line); border-radius: 2px;
+  }
+  .floor-line::before { left: 0; }
+  .floor-line::after { right: 0; }
+  .wake {
+    position: absolute; left: 0; top: 50%; height: 44%; width: 100%;
+    translate: 0 -50%;
+    transform-origin: 0 50%; transform: scaleX(0);
+    background: linear-gradient(90deg, transparent, var(--water-lit) 18%, var(--water-lit));
+    border-radius: 0 999px 999px 0;
+  }
+  .pad {
+    position: absolute; left: 0; top: 14%; bottom: 14%; width: 7px; margin-left: -7px;
+    background: var(--cap); border-radius: 2px;
+    box-shadow: 0 2px 4px rgb(0 30 40 / 0.3);
+    transform: translateX(0);
+    transition: transform 700ms var(--ease-out), background-color 300ms;
+  }
+  .pad.is-split { background: var(--split); }
+  .swimmer {
+    position: absolute; left: 0; top: 50%;
+    width: var(--swim); aspect-ratio: 1; margin: calc(var(--swim) / -2) 0 0 calc(var(--swim) * -1);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #fff6c9 0 18%, var(--cap) 22%);
+    box-shadow: 0 0 0 2px var(--deck), 0 3px 6px rgb(0 30 40 / 0.35);
+    transform: translateX(0);
+    opacity: 0;
+    transition: opacity 200ms;
+  }
+  .swimmer::after {
+    /* Foam where the arms break the water. */
+    content: ""; position: absolute; right: 70%; top: 50%; width: 140%; height: 70%;
+    translate: 0 -50%;
+    background: radial-gradient(ellipse at 100% 50%, rgb(255 255 255 / 0.75), transparent 65%);
+    z-index: -1;
+  }
+  .lane.is-swimming .swimmer { opacity: 1; }
+  .lane.is-split .swimmer { background: radial-gradient(circle at 38% 34%, #ffd3e2 0 18%, var(--split) 22%); }
+  .lane-speed {
+    position: absolute; right: 10px; top: 50%; translate: 0 -50%;
+    font: 700 min(0.8rem, calc(var(--lane-h) * 0.4))/1 var(--body); font-variant-numeric: tabular-nums;
+    color: var(--on-water); background: color-mix(in srgb, var(--water) 82%, transparent);
+    padding: 2px 6px; border-radius: 4px;
+  }
+  .lane-speed:empty { display: none; }
+
+  .pool-note {
+    padding-block: 14px 26px;
+    color: var(--on-deck-soft);
+    font-size: 0.92rem;
+    max-width: 92ch;
+  }
+  .pool-note a { color: var(--on-deck); }
+
+  /* Short laptop screens: a tighter deck so all eight lanes stay on the first screen. */
+  @media (max-height: 800px) and (min-width: 861px) {
+    h1 { font-size: clamp(3.2rem, 6vw, 4.4rem); }
+    .hero-deck { padding-block: 8px 14px; gap: 12px clamp(32px, 5vw, 72px); }
+    .get { margin-top: 14px; }
+    .board { padding: 10px 14px; }
+    .board-rows { margin-top: 8px; padding-bottom: 8px; }
+    .board-controls { margin-top: 8px; }
+    .pool { --lane-h: clamp(22px, calc((100svh - 480px) / 8), 60px); }
+  }
+
+  /* Too short for readable per-lane labels; the board carries the total. */
+  @media (max-height: 700px) { .lane-speed { display: none; } }
+
+  /* Phones: headline, offer, then the pool right away; the board follows the pool. */
+  @media (max-width: 860px) {
+    .hero { display: flex; flex-direction: column; }
+    .hero-deck { display: contents; }
+    h1, .hero-copy, .board { margin-inline: var(--gutter); }
+    h1 { order: 1; padding-top: 8px; }
+    .hero-copy { order: 2; margin-top: 14px; margin-bottom: 18px; }
+    .coping-top { order: 3; }
+    .pool { order: 4; --lane-h: 24px; --block-w: 36px; }
+    .coping-bottom { order: 5; }
+    .board { order: 6; margin-top: 18px; max-width: 460px; }
+    .pool-note { order: 7; }
+    .lane-speed { display: none; }
+    .block { border-right-width: 3px; }
+    .hero-lede { font-size: 1.02rem; }
+    .get { margin-top: 16px; gap: 10px; }
+  }
+  @media (max-width: 480px) {
+    .board-rows dd { font-size: 1.7rem; }
+    .board-play { margin-left: 0; }
+  }
+</style>
+
+<script>
+  import { newHeat, step, totalSpeed, formatClock, type Heat, type Mode } from '../lib/heat';
+
+  // The dot-matrix face draws "." like a plus sign; set separators in the display face.
+  const led = (text: string) => text.replace(/[.:]/g, (m) => `<span class="sep">${m}</span>`);
+
+  const root = document.querySelector<HTMLElement>('.hero');
+  if (root) setup(root);
+
+  function setup(root: HTMLElement) {
+    // Mac visitors get the Mac build as the main button.
+    const primary = root.querySelector<HTMLAnchorElement>('[data-primary]')!;
+    const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
+    const platform = nav.userAgentData?.platform ?? navigator.platform ?? '';
+    const isMac = /mac/i.test(platform) && !/iphone|ipad/i.test(navigator.userAgent);
+    if (isMac && primary.dataset.macUrl) {
+      primary.href = primary.dataset.macUrl;
+      root.querySelector('[data-primary-label]')!.textContent = 'Download for Mac';
+      const meta = root.querySelector('[data-primary-meta]')!;
+      meta.textContent = meta.textContent!.replace(/ · [^·]*installer/, primary.dataset.macSize ? ` · ${primary.dataset.macSize} disk image` : '');
+      root.querySelector<HTMLElement>('[data-alt-mac]')!.hidden = true;
+      root.querySelector<HTMLElement>('[data-alt-win]')!.hidden = false;
+    }
+
+    const pool = root.querySelector<HTMLElement>('[data-pool]')!;
+    const laneEls = [...pool.querySelectorAll<HTMLElement>('.lane')].map((el) => ({
+      el,
+      track: el.querySelector<HTMLElement>('.track')!,
+      wake: el.querySelector<HTMLElement>('.wake')!,
+      pad: el.querySelector<HTMLElement>('.pad')!,
+      swimmer: el.querySelector<HTMLElement>('.swimmer')!,
+      speed: el.querySelector<HTMLElement>('.lane-speed')!,
+    }));
+    const out = {
+      speed: root.querySelector<HTMLElement>('[data-speed]')!,
+      done: root.querySelector<HTMLElement>('[data-done]')!,
+      time: root.querySelector<HTMLElement>('[data-time]')!,
+    };
+    const modeButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-mode]')];
+    const playButton = root.querySelector<HTMLButtonElement>('[data-play]')!;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+    let heat: Heat = newHeat('fastdl');
+    let trackW = laneEls[0].track.clientWidth;
+    let playing = !reduce.matches;
+    let onScreen = true;
+    let last = 0;
+    let lastText = 0;
+    let holdUntil = 0;
+    const splitTimers = new Map<number, number>();
+
+    new ResizeObserver(() => { trackW = laneEls[0].track.clientWidth; draw(true); }).observe(laneEls[0].track);
+
+    function flash(i: number) {
+      const lane = laneEls[i];
+      lane.el.classList.add('is-split');
+      lane.pad.classList.add('is-split');
+      clearTimeout(splitTimers.get(i));
+      splitTimers.set(i, window.setTimeout(() => {
+        lane.el.classList.remove('is-split');
+        lane.pad.classList.remove('is-split');
+      }, 1400));
+    }
+
+    function draw(text: boolean) {
+      laneEls.forEach((lane, i) => {
+        const l = heat.lanes[i];
+        if (!l) {
+          lane.el.classList.remove('is-swimming');
+          lane.wake.style.transform = 'scaleX(0)';
+          lane.pad.style.opacity = '0';
+          lane.speed.textContent = '';
+          return;
+        }
+        // A lane shows how far its connection has swum: every piece it has done.
+        const x = Math.min((l.base + l.done) / heat.scale, 1);
+        lane.el.classList.toggle('is-swimming', l.started);
+        lane.wake.style.transform = `scaleX(${x})`;
+        lane.swimmer.style.transform = `translateX(${x * trackW}px)`;
+        lane.pad.style.opacity = '1';
+        lane.pad.style.transform = `translateX(${Math.min((l.base + l.size) / heat.scale, 1) * trackW}px)`;
+        if (text) lane.speed.textContent = l.finished ? 'done' : l.started ? `${l.speed.toFixed(1)} MB/s` : '';
+      });
+      if (text) {
+        out.speed.innerHTML = led(totalSpeed(heat).toFixed(1).padStart(4, '0'));
+        out.done.textContent = String(Math.floor(heat.received)).padStart(3, '0');
+        out.time.innerHTML = led(formatClock(heat.finishedAt ?? heat.t));
+      }
+    }
+
+    function frame(now: number) {
+      if (!playing || !onScreen || document.hidden) { last = 0; return; }
+      requestAnimationFrame(frame);
+      if (!last) last = now;
+      const dt = Math.min((now - last) / 1000, 0.1);
+      last = now;
+      if (heat.finishedAt !== null) {
+        // Hold the result on the board, then swim the heat again.
+        if (!holdUntil) holdUntil = now + 5000;
+        if (now >= holdUntil) { holdUntil = 0; reset(heat.mode); }
+        return;
+      }
+      // Small steps keep the split rule exact at any frame rate.
+      const sub = Math.ceil(dt / (1 / 120));
+      for (let k = 0; k < sub; k++) step(heat, dt / sub).forEach((s) => { flash(s.from); flash(s.to); });
+      const text = now - lastText > 120;
+      if (text) lastText = now;
+      draw(text || heat.finishedAt !== null);
+    }
+
+    function start() { if (playing && onScreen && !document.hidden && !last) requestAnimationFrame(frame); }
+
+    function reset(mode: Mode) {
+      heat = newHeat(mode);
+      if (!playing) {
+        // A still frame, part-way through, for anyone who asked for less motion.
+        const until = mode === 'fastdl' ? 16.4 : 9.5;
+        while (heat.t < until && heat.finishedAt === null) step(heat, 1 / 60);
+      }
+      draw(true);
+    }
+
+    modeButtons.forEach((b) => b.addEventListener('click', () => {
+      modeButtons.forEach((o) => o.setAttribute('aria-checked', String(o === b)));
+      holdUntil = 0;
+      reset(b.dataset.mode as Mode);
+    }));
+    playButton.addEventListener('click', () => {
+      playing = !playing;
+      playButton.textContent = playing ? 'Pause' : 'Play';
+      playButton.setAttribute('aria-label', playing ? 'Pause the replay' : 'Play the replay');
+      if (playing && heat.finishedAt !== null) reset(heat.mode);
+      start();
+    });
+    if (!playing) {
+      playButton.textContent = 'Play';
+      playButton.setAttribute('aria-label', 'Play the replay');
+    }
+
+    new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; start(); }).observe(pool);
+    document.addEventListener('visibilitychange', start);
+    reset('fastdl');
+    start();
+  }
+</script>

@@ -1,0 +1,237 @@
+/* fastdl site: a competition pool seen from above.
+   Water and its fixed tile grid own the big regions; the deck is navy; ropes
+   are red and white; caps and touchpads are yellow; pink belongs only to a
+   lane that is being split; numbers live on the black timing board. */
+
+:root {
+  --water: #27b0a8;
+  --water-deep: #1a9a93;
+  --water-lit: rgb(255 255 255 / 0.32);
+  --grout: rgb(255 255 255 / 0.2);
+  --floor-line: rgb(8 40 52 / 0.62);
+  --on-water: #07202b;
+  --on-water-soft: #0f3b47;
+
+  --deck: #0b2230;
+  --deck-2: #123444;
+  --deck-line: #21495a;
+  --on-deck: #eef7f6;
+  --on-deck-soft: #a8d4cf;
+
+  --wall: #f2f7f7;
+  --wall-grout: #dce8e8;
+  --on-wall: #0b2230;
+  --on-wall-soft: #3d5a63;
+
+  --rope: #e2323f;
+  --rope-2: #ffffff;
+  --cap: #ffd23f;
+  --cap-ink: #0b2230;
+  --split: #ff4f8b;
+
+  --board: #05090b;
+  --board-edge: #1b2328;
+  --led: #ffb000;
+  --led-dim: #3a2a06;
+  --led-soft: #c98b00;
+
+  --focus: #ffd23f;
+  --tile: 24px;
+
+  --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --body: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  --digits: "Doto", ui-monospace, monospace;
+  --code: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --gutter: clamp(16px, 5vw, 72px);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+
+/* The pool at night: underwater lights, a dark deck, dark tile. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --water: #0f625e;
+    --water-deep: #0b504c;
+    --water-lit: rgb(190 255 246 / 0.2);
+    --grout: rgb(255 255 255 / 0.08);
+    --floor-line: rgb(0 10 14 / 0.62);
+    --on-water: #eafaf7;
+    --on-water-soft: #b4e2dc;
+    --deck: #061218;
+    --deck-2: #0c1f28;
+    --deck-line: #1a3440;
+    --wall: #0c171c;
+    --wall-grout: #15252b;
+    --on-wall: #e4eff0;
+    --on-wall-soft: #9db5b9;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --water: #0f625e;
+  --water-deep: #0b504c;
+  --water-lit: rgb(190 255 246 / 0.2);
+  --grout: rgb(255 255 255 / 0.08);
+  --floor-line: rgb(0 10 14 / 0.62);
+  --on-water: #eafaf7;
+  --on-water-soft: #b4e2dc;
+  --deck: #061218;
+  --deck-2: #0c1f28;
+  --deck-line: #1a3440;
+  --wall: #0c171c;
+  --wall-grout: #15252b;
+  --on-wall: #e4eff0;
+  --on-wall-soft: #9db5b9;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 24px; }
+body {
+  background: var(--deck);
+  color: var(--on-wall);
+  font: 400 1.0625rem/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  caret-color: var(--cap);
+  scrollbar-color: var(--deck-line) var(--deck);
+}
+img, svg { display: block; max-width: 100%; }
+button, input { font: inherit; color: inherit; }
+::selection { background: var(--cap); color: var(--cap-ink); }
+
+a { color: inherit; text-underline-offset: 0.22em; text-decoration-thickness: 0.08em; }
+a:hover { text-decoration-thickness: 0.14em; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 2px; }
+.on-light :focus-visible, .wall :focus-visible { outline-color: var(--on-wall); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip {
+  position: absolute; left: 16px; top: -100px; z-index: 50;
+  background: var(--cap); color: var(--cap-ink); padding: 10px 16px; font-weight: 700;
+}
+.skip:focus { top: 16px; }
+
+h1, h2, h3 {
+  font-family: var(--display);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+p, li { text-wrap: pretty; }
+code, kbd {
+  font-family: var(--code);
+  font-size: 0.88em;
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  padding: 0.08em 0.36em;
+  border-radius: 4px;
+}
+
+/* ---------- Surfaces ---------- */
+
+.water {
+  background-color: var(--water);
+  background-image:
+    linear-gradient(var(--grout) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grout) 1px, transparent 1px);
+  background-size: var(--tile) var(--tile);
+  color: var(--on-water);
+}
+.wall {
+  background-color: var(--wall);
+  color: var(--on-wall);
+}
+.deck { background: var(--deck); color: var(--on-deck); }
+
+/* Pool coping and the gutter grate between deck and water. */
+.coping {
+  height: 22px;
+  background:
+    repeating-linear-gradient(90deg, var(--deck-line) 0 2px, transparent 2px 9px) 0 12px / 100% 10px no-repeat,
+    var(--deck-2);
+  border-top: 2px solid var(--deck-line);
+}
+
+/* A lane rope: red and white floats. */
+.rope {
+  height: 10px;
+  background:
+    radial-gradient(circle at 50% 42%, rgb(255 255 255 / 0.55) 0 1.5px, transparent 2px) 0 0 / 14px 10px repeat-x,
+    repeating-linear-gradient(90deg, var(--rope) 0 13px, transparent 13px 14px) 0 0 / 100% 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 3px rgb(0 30 40 / 0.25);
+}
+.rope.alt {
+  background:
+    radial-gradient(circle at 50% 42%, rgb(255 255 255 / 0.55) 0 1.5px, transparent 2px) 0 0 / 14px 10px repeat-x,
+    repeating-linear-gradient(90deg, var(--rope) 0 13px, transparent 13px 14px, var(--rope-2) 14px 27px, transparent 27px 28px) 0 0 / 100% 10px;
+}
+
+.wrap { width: min(1240px, 100% - 2 * var(--gutter)); margin-inline: auto; }
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.6em;
+  min-height: 52px; padding: 0.7em 1.3em;
+  font: 800 1.35rem/1 var(--display); letter-spacing: 0.02em; text-transform: uppercase;
+  text-decoration: none; border: 2px solid transparent; border-radius: 6px;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), background-color 160ms, box-shadow 160ms;
+}
+.btn svg { width: 1.1em; height: 1.1em; flex: none; }
+.btn-cap {
+  background: var(--cap); color: var(--cap-ink);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.25), 0 10px 24px -10px rgb(255 210 63 / 0.6);
+}
+.btn-cap:hover { transform: translateY(-1px); background: #ffdc66; }
+.btn-cap:active { transform: translateY(1px); box-shadow: 0 1px 0 rgb(0 0 0 / 0.25); }
+.btn-line { border-color: currentColor; background: transparent; }
+.btn-line:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+
+.link-arrow {
+  display: inline-flex; align-items: center; gap: 0.4em; font-weight: 700;
+}
+.link-arrow svg { width: 1em; height: 1em; transition: transform 160ms var(--ease-out); }
+.link-arrow:hover svg { transform: translateX(3px); }
+
+/* ---------- Site header ---------- */
+
+.site-nav {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 72px;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 800 1.9rem/1 var(--display); text-decoration: none; letter-spacing: 0.01em;
+}
+.brand img { width: 34px; height: 34px; border-radius: 8px; }
+.site-nav ul { display: flex; gap: clamp(14px, 3vw, 32px); list-style: none; padding: 0; align-items: center; }
+.site-nav ul a { text-decoration: none; font-weight: 700; color: var(--on-deck-soft); }
+.site-nav ul a:hover, .site-nav ul a[aria-current="page"] { color: var(--on-deck); text-decoration: underline; }
+.site-nav .nav-cta {
+  color: var(--cap-ink); background: var(--cap); padding: 8px 14px; border-radius: 6px;
+  font: 800 1.05rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.04em;
+}
+.site-nav .nav-cta:hover { color: var(--cap-ink); text-decoration: none; background: #ffdc66; }
+@media (max-width: 560px) {
+  .site-nav .hide-sm { display: none; }
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer { padding: 56px 0 40px; color: var(--on-deck-soft); font-size: 0.95rem; }
+.site-footer .row { display: flex; flex-wrap: wrap; gap: 24px 48px; justify-content: space-between; align-items: start; }
+.site-footer ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.site-footer a { color: var(--on-deck); }
+.site-footer p { max-width: 52ch; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

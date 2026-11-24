@@ -1,0 +1,783 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-24T21:43:12.291Z",
+  "title": "Design System: fastdl",
+  "extensions": {
+    "colorMeta": {
+      "water": {
+        "role": "primary",
+        "displayName": "Pool Aqua",
+        "canonical": "oklch(68.7% 0.111 188.8)",
+        "tonalRamp": [
+          "oklch(15% 0.018 188.8)",
+          "oklch(25% 0.050 188.8)",
+          "oklch(35% 0.064 188.8)",
+          "oklch(48% 0.082 188.8)",
+          "oklch(60% 0.099 188.8)",
+          "oklch(72% 0.106 188.8)",
+          "oklch(84% 0.090 188.8)",
+          "oklch(95% 0.037 188.8)"
+        ]
+      },
+      "deck": {
+        "role": "primary",
+        "displayName": "Pool Deck Navy",
+        "canonical": "oklch(24.1% 0.039 238.2)",
+        "tonalRamp": [
+          "oklch(15% 0.017 238.2)",
+          "oklch(25% 0.039 238.2)",
+          "oklch(35% 0.034 238.2)",
+          "oklch(48% 0.028 238.2)",
+          "oklch(60% 0.022 238.2)",
+          "oklch(72% 0.016 238.2)",
+          "oklch(84% 0.010 238.2)",
+          "oklch(95% 0.005 238.2)"
+        ]
+      },
+      "cap": {
+        "role": "secondary",
+        "displayName": "Touchpad Yellow",
+        "canonical": "oklch(87.9% 0.162 90.9)",
+        "tonalRamp": [
+          "oklch(15% 0.020 90.9)",
+          "oklch(25% 0.040 90.9)",
+          "oklch(35% 0.055 90.9)",
+          "oklch(48% 0.081 90.9)",
+          "oklch(60% 0.105 90.9)",
+          "oklch(72% 0.130 90.9)",
+          "oklch(84% 0.154 90.9)",
+          "oklch(95% 0.074 90.9)"
+        ]
+      },
+      "cap-hover": {
+        "role": "secondary",
+        "displayName": "Cap Highlight",
+        "canonical": "oklch(90.2% 0.141 92.8)",
+        "tonalRamp": [
+          "oklch(15% 0.018 92.8)",
+          "oklch(25% 0.035 92.8)",
+          "oklch(35% 0.044 92.8)",
+          "oklch(48% 0.067 92.8)",
+          "oklch(60% 0.088 92.8)",
+          "oklch(72% 0.109 92.8)",
+          "oklch(84% 0.130 92.8)",
+          "oklch(95% 0.066 92.8)"
+        ]
+      },
+      "rope": {
+        "role": "secondary",
+        "displayName": "Lane Rope Red",
+        "canonical": "oklch(59.9% 0.210 23.0)",
+        "tonalRamp": [
+          "oklch(15% 0.046 23.0)",
+          "oklch(25% 0.119 23.0)",
+          "oklch(35% 0.145 23.0)",
+          "oklch(48% 0.179 23.0)",
+          "oklch(60% 0.210 23.0)",
+          "oklch(72% 0.178 23.0)",
+          "oklch(84% 0.147 23.0)",
+          "oklch(95% 0.059 23.0)"
+        ]
+      },
+      "board": {
+        "role": "tertiary",
+        "displayName": "Timing Board Black",
+        "canonical": "oklch(13.5% 0.009 224.8)",
+        "tonalRamp": [
+          "oklch(15% 0.005 224.8)",
+          "oklch(25% 0.008 224.8)",
+          "oklch(35% 0.007 224.8)",
+          "oklch(48% 0.005 224.8)",
+          "oklch(60% 0.005 224.8)",
+          "oklch(72% 0.005 224.8)",
+          "oklch(84% 0.005 224.8)",
+          "oklch(95% 0.005 224.8)"
+        ]
+      },
+      "board-edge": {
+        "role": "tertiary",
+        "displayName": "Board Bezel",
+        "canonical": "oklch(25.1% 0.015 235.6)",
+        "tonalRamp": [
+          "oklch(15% 0.007 235.6)",
+          "oklch(25% 0.015 235.6)",
+          "oklch(35% 0.013 235.6)",
+          "oklch(48% 0.011 235.6)",
+          "oklch(60% 0.008 235.6)",
+          "oklch(72% 0.006 235.6)",
+          "oklch(84% 0.005 235.6)",
+          "oklch(95% 0.005 235.6)"
+        ]
+      },
+      "led": {
+        "role": "tertiary",
+        "displayName": "LED Amber",
+        "canonical": "oklch(81.2% 0.170 76.4)",
+        "tonalRamp": [
+          "oklch(15% 0.021 76.4)",
+          "oklch(25% 0.051 76.4)",
+          "oklch(35% 0.072 76.4)",
+          "oklch(48% 0.100 76.4)",
+          "oklch(60% 0.125 76.4)",
+          "oklch(72% 0.151 76.4)",
+          "oklch(84% 0.165 76.4)",
+          "oklch(95% 0.071 76.4)"
+        ]
+      },
+      "led-soft": {
+        "role": "tertiary",
+        "displayName": "LED Dim Amber",
+        "canonical": "oklch(68.1% 0.142 77.1)",
+        "tonalRamp": [
+          "oklch(15% 0.024 77.1)",
+          "oklch(25% 0.066 77.1)",
+          "oklch(35% 0.083 77.1)",
+          "oklch(48% 0.107 77.1)",
+          "oklch(60% 0.128 77.1)",
+          "oklch(72% 0.136 77.1)",
+          "oklch(84% 0.114 77.1)",
+          "oklch(95% 0.047 77.1)"
+        ]
+      },
+      "led-spent": {
+        "role": "tertiary",
+        "displayName": "Spent Amber",
+        "canonical": "oklch(72.7% 0.099 85.3)",
+        "tonalRamp": [
+          "oklch(15% 0.014 85.3)",
+          "oklch(25% 0.040 85.3)",
+          "oklch(35% 0.052 85.3)",
+          "oklch(48% 0.069 85.3)",
+          "oklch(60% 0.083 85.3)",
+          "oklch(72% 0.098 85.3)",
+          "oklch(84% 0.085 85.3)",
+          "oklch(95% 0.036 85.3)"
+        ]
+      },
+      "split": {
+        "role": "tertiary",
+        "displayName": "Split Pink",
+        "canonical": "oklch(68.8% 0.215 4.1)",
+        "tonalRamp": [
+          "oklch(15% 0.035 4.1)",
+          "oklch(25% 0.097 4.1)",
+          "oklch(35% 0.124 4.1)",
+          "oklch(48% 0.159 4.1)",
+          "oklch(60% 0.192 4.1)",
+          "oklch(72% 0.206 4.1)",
+          "oklch(84% 0.174 4.1)",
+          "oklch(95% 0.072 4.1)"
+        ]
+      },
+      "on-water": {
+        "role": "neutral",
+        "displayName": "Pool Bottom Ink",
+        "canonical": "oklch(23.0% 0.037 230.2)",
+        "tonalRamp": [
+          "oklch(15% 0.017 230.2)",
+          "oklch(25% 0.036 230.2)",
+          "oklch(35% 0.032 230.2)",
+          "oklch(48% 0.026 230.2)",
+          "oklch(60% 0.020 230.2)",
+          "oklch(72% 0.014 230.2)",
+          "oklch(84% 0.009 230.2)",
+          "oklch(95% 0.005 230.2)"
+        ]
+      },
+      "deck-2": {
+        "role": "neutral",
+        "displayName": "Deck Raised",
+        "canonical": "oklch(30.8% 0.048 231.8)",
+        "tonalRamp": [
+          "oklch(15% 0.019 231.8)",
+          "oklch(25% 0.045 231.8)",
+          "oklch(35% 0.046 231.8)",
+          "oklch(48% 0.038 231.8)",
+          "oklch(60% 0.031 231.8)",
+          "oklch(72% 0.024 231.8)",
+          "oklch(84% 0.016 231.8)",
+          "oklch(95% 0.006 231.8)"
+        ]
+      },
+      "deck-line": {
+        "role": "neutral",
+        "displayName": "Deck Seam",
+        "canonical": "oklch(38.4% 0.053 228.3)",
+        "tonalRamp": [
+          "oklch(15% 0.019 228.3)",
+          "oklch(25% 0.044 228.3)",
+          "oklch(35% 0.051 228.3)",
+          "oklch(48% 0.047 228.3)",
+          "oklch(60% 0.039 228.3)",
+          "oklch(72% 0.031 228.3)",
+          "oklch(84% 0.023 228.3)",
+          "oklch(95% 0.008 228.3)"
+        ]
+      },
+      "on-deck": {
+        "role": "neutral",
+        "displayName": "Deck Foam",
+        "canonical": "oklch(96.9% 0.010 189.1)",
+        "tonalRamp": [
+          "oklch(15% 0.005 189.1)",
+          "oklch(25% 0.005 189.1)",
+          "oklch(35% 0.005 189.1)",
+          "oklch(48% 0.005 189.1)",
+          "oklch(60% 0.005 189.1)",
+          "oklch(72% 0.007 189.1)",
+          "oklch(84% 0.008 189.1)",
+          "oklch(95% 0.005 189.1)"
+        ]
+      },
+      "on-deck-soft": {
+        "role": "neutral",
+        "displayName": "Deck Mist",
+        "canonical": "oklch(83.7% 0.047 187.8)",
+        "tonalRamp": [
+          "oklch(15% 0.006 187.8)",
+          "oklch(25% 0.012 187.8)",
+          "oklch(35% 0.018 187.8)",
+          "oklch(48% 0.026 187.8)",
+          "oklch(60% 0.033 187.8)",
+          "oklch(72% 0.040 187.8)",
+          "oklch(84% 0.046 187.8)",
+          "oklch(95% 0.020 187.8)"
+        ]
+      },
+      "wall": {
+        "role": "neutral",
+        "displayName": "Wall Tile",
+        "canonical": "oklch(97.2% 0.005 197.1)",
+        "tonalRamp": [
+          "oklch(15% 0.005 197.1)",
+          "oklch(25% 0.005 197.1)",
+          "oklch(35% 0.005 197.1)",
+          "oklch(48% 0.005 197.1)",
+          "oklch(60% 0.005 197.1)",
+          "oklch(72% 0.005 197.1)",
+          "oklch(84% 0.005 197.1)",
+          "oklch(95% 0.005 197.1)"
+        ]
+      },
+      "wall-grout": {
+        "role": "neutral",
+        "displayName": "Wall Grout",
+        "canonical": "oklch(92.2% 0.013 196.9)",
+        "tonalRamp": [
+          "oklch(15% 0.005 196.9)",
+          "oklch(25% 0.005 196.9)",
+          "oklch(35% 0.005 196.9)",
+          "oklch(48% 0.006 196.9)",
+          "oklch(60% 0.008 196.9)",
+          "oklch(72% 0.010 196.9)",
+          "oklch(84% 0.012 196.9)",
+          "oklch(95% 0.006 196.9)"
+        ]
+      },
+      "on-wall": {
+        "role": "neutral",
+        "displayName": "Wall Ink",
+        "canonical": "oklch(24.1% 0.039 238.2)",
+        "tonalRamp": [
+          "oklch(15% 0.017 238.2)",
+          "oklch(25% 0.039 238.2)",
+          "oklch(35% 0.034 238.2)",
+          "oklch(48% 0.028 238.2)",
+          "oklch(60% 0.022 238.2)",
+          "oklch(72% 0.016 238.2)",
+          "oklch(84% 0.010 238.2)",
+          "oklch(95% 0.005 238.2)"
+        ]
+      },
+      "on-wall-soft": {
+        "role": "neutral",
+        "displayName": "Wall Ink Soft",
+        "canonical": "oklch(44.8% 0.037 219.2)",
+        "tonalRamp": [
+          "oklch(15% 0.012 219.2)",
+          "oklch(25% 0.028 219.2)",
+          "oklch(35% 0.033 219.2)",
+          "oklch(48% 0.036 219.2)",
+          "oklch(60% 0.030 219.2)",
+          "oklch(72% 0.025 219.2)",
+          "oklch(84% 0.019 219.2)",
+          "oklch(95% 0.007 219.2)"
+        ]
+      },
+      "sign-face": {
+        "role": "neutral",
+        "displayName": "Sign Face",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "oklch(15% 0.005 89.9)",
+          "oklch(25% 0.005 89.9)",
+          "oklch(35% 0.005 89.9)",
+          "oklch(48% 0.005 89.9)",
+          "oklch(60% 0.005 89.9)",
+          "oklch(72% 0.005 89.9)",
+          "oklch(84% 0.005 89.9)",
+          "oklch(95% 0.005 89.9)"
+        ]
+      },
+      "water-night": {
+        "role": "primary",
+        "displayName": "Night Pool Aqua",
+        "canonical": "oklch(45.0% 0.073 189.8)",
+        "tonalRamp": [
+          "oklch(15% 0.023 189.8)",
+          "oklch(25% 0.055 189.8)",
+          "oklch(35% 0.064 189.8)",
+          "oklch(48% 0.071 189.8)",
+          "oklch(60% 0.060 189.8)",
+          "oklch(72% 0.049 189.8)",
+          "oklch(84% 0.038 189.8)",
+          "oklch(95% 0.014 189.8)"
+        ]
+      },
+      "deck-night": {
+        "role": "primary",
+        "displayName": "Night Deck",
+        "canonical": "oklch(17.4% 0.022 230.4)",
+        "tonalRamp": [
+          "oklch(15% 0.011 230.4)",
+          "oklch(25% 0.020 230.4)",
+          "oklch(35% 0.017 230.4)",
+          "oklch(48% 0.013 230.4)",
+          "oklch(60% 0.010 230.4)",
+          "oklch(72% 0.007 230.4)",
+          "oklch(84% 0.005 230.4)",
+          "oklch(95% 0.005 230.4)"
+        ]
+      },
+      "deck-2-night": {
+        "role": "neutral",
+        "displayName": "Night Deck Raised",
+        "canonical": "oklch(22.8% 0.030 230.6)",
+        "tonalRamp": [
+          "oklch(15% 0.014 230.6)",
+          "oklch(25% 0.030 230.6)",
+          "oklch(35% 0.026 230.6)",
+          "oklch(48% 0.021 230.6)",
+          "oklch(60% 0.016 230.6)",
+          "oklch(72% 0.012 230.6)",
+          "oklch(84% 0.008 230.6)",
+          "oklch(95% 0.005 230.6)"
+        ]
+      },
+      "deck-line-night": {
+        "role": "neutral",
+        "displayName": "Night Deck Seam",
+        "canonical": "oklch(31.0% 0.039 229.6)",
+        "tonalRamp": [
+          "oklch(15% 0.015 229.6)",
+          "oklch(25% 0.036 229.6)",
+          "oklch(35% 0.037 229.6)",
+          "oklch(48% 0.030 229.6)",
+          "oklch(60% 0.025 229.6)",
+          "oklch(72% 0.019 229.6)",
+          "oklch(84% 0.013 229.6)",
+          "oklch(95% 0.005 229.6)"
+        ]
+      },
+      "wall-night": {
+        "role": "neutral",
+        "displayName": "Night Wall",
+        "canonical": "oklch(19.7% 0.019 228.2)",
+        "tonalRamp": [
+          "oklch(15% 0.009 228.2)",
+          "oklch(25% 0.018 228.2)",
+          "oklch(35% 0.015 228.2)",
+          "oklch(48% 0.012 228.2)",
+          "oklch(60% 0.009 228.2)",
+          "oklch(72% 0.007 228.2)",
+          "oklch(84% 0.005 228.2)",
+          "oklch(95% 0.005 228.2)"
+        ]
+      },
+      "wall-grout-night": {
+        "role": "neutral",
+        "displayName": "Night Wall Grout",
+        "canonical": "oklch(25.3% 0.024 223.6)",
+        "tonalRamp": [
+          "oklch(15% 0.011 223.6)",
+          "oklch(25% 0.024 223.6)",
+          "oklch(35% 0.021 223.6)",
+          "oklch(48% 0.017 223.6)",
+          "oklch(60% 0.014 223.6)",
+          "oklch(72% 0.010 223.6)",
+          "oklch(84% 0.006 223.6)",
+          "oklch(95% 0.005 223.6)"
+        ]
+      },
+      "on-wall-night": {
+        "role": "neutral",
+        "displayName": "Night Wall Ink",
+        "canonical": "oklch(94.4% 0.012 203.5)",
+        "tonalRamp": [
+          "oklch(15% 0.005 203.5)",
+          "oklch(25% 0.005 203.5)",
+          "oklch(35% 0.005 203.5)",
+          "oklch(48% 0.005 203.5)",
+          "oklch(60% 0.007 203.5)",
+          "oklch(72% 0.008 203.5)",
+          "oklch(84% 0.010 203.5)",
+          "oklch(95% 0.006 203.5)"
+        ]
+      },
+      "on-wall-soft-night": {
+        "role": "neutral",
+        "displayName": "Night Wall Ink Soft",
+        "canonical": "oklch(75.6% 0.027 208.7)",
+        "tonalRamp": [
+          "oklch(15% 0.005 208.7)",
+          "oklch(25% 0.010 208.7)",
+          "oklch(35% 0.013 208.7)",
+          "oklch(48% 0.018 208.7)",
+          "oklch(60% 0.022 208.7)",
+          "oklch(72% 0.026 208.7)",
+          "oklch(84% 0.024 208.7)",
+          "oklch(95% 0.010 208.7)"
+        ]
+      },
+      "on-water-night": {
+        "role": "neutral",
+        "displayName": "Night Pool Ink",
+        "canonical": "oklch(97.2% 0.017 183.5)",
+        "tonalRamp": [
+          "oklch(15% 0.005 183.5)",
+          "oklch(25% 0.005 183.5)",
+          "oklch(35% 0.005 183.5)",
+          "oklch(48% 0.007 183.5)",
+          "oklch(60% 0.009 183.5)",
+          "oklch(72% 0.012 183.5)",
+          "oklch(84% 0.014 183.5)",
+          "oklch(95% 0.008 183.5)"
+        ]
+      },
+      "cap-ink": {
+        "role": "neutral",
+        "displayName": "Cap Ink",
+        "canonical": "oklch(24.1% 0.039 238.2)",
+        "tonalRamp": [
+          "oklch(15% 0.017 238.2)",
+          "oklch(25% 0.039 238.2)",
+          "oklch(35% 0.034 238.2)",
+          "oklch(48% 0.028 238.2)",
+          "oklch(60% 0.022 238.2)",
+          "oklch(72% 0.016 238.2)",
+          "oklch(84% 0.010 238.2)",
+          "oklch(95% 0.005 238.2)"
+        ]
+      },
+      "rope-float": {
+        "role": "secondary",
+        "displayName": "Float White"
+      },
+      "grout": {
+        "role": "neutral",
+        "displayName": "Grout",
+        "note": "Translucent overlay on water; no ramp."
+      },
+      "water-lit": {
+        "role": "neutral",
+        "displayName": "Water Light",
+        "note": "Translucent overlay on water; no ramp."
+      },
+      "floor-line": {
+        "role": "neutral",
+        "displayName": "Floor Line",
+        "note": "Translucent overlay on water; no ramp."
+      },
+      "grout-night": {
+        "role": "neutral",
+        "displayName": "Grout (night)",
+        "note": "Translucent overlay on water; no ramp."
+      },
+      "water-lit-night": {
+        "role": "neutral",
+        "displayName": "Water Light (night)",
+        "note": "Translucent overlay on water; no ramp."
+      },
+      "floor-line-night": {
+        "role": "neutral",
+        "displayName": "Floor Line (night)",
+        "note": "Translucent overlay on water; no ramp."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero line and the final download heading."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Feature and step headings."
+      },
+      "lane-number": {
+        "displayName": "Lane Number",
+        "purpose": "Numerals in lane blocks, step counters, guide contents."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All prose."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "Inline emphasis and rule leads."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Board titles and units, table headers, contents title; uppercase, tracked."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Every button and the nav download link."
+      },
+      "led-digits": {
+        "displayName": "LED Digits",
+        "purpose": "Race metrics on the timing board only; \".\" and \":\" swapped to the display face."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Inline code, file names and code blocks."
+      }
+    },
+    "shadows": [
+      {
+        "name": "rope-float",
+        "value": "0 2px 3px rgb(0 30 40 / 0.25)",
+        "purpose": "Lane ropes on the water."
+      },
+      {
+        "name": "touchpad",
+        "value": "0 2px 4px rgb(0 30 40 / 0.3)",
+        "purpose": "Yellow touchpads at the lane ends."
+      },
+      {
+        "name": "finish-pad",
+        "value": "0 4px 10px rgb(0 30 40 / 0.3)",
+        "purpose": "The large touchpad beside the final download."
+      },
+      {
+        "name": "swimmer-cap",
+        "value": "0 0 0 2px var(--deck), 0 3px 6px rgb(0 30 40 / 0.35)",
+        "purpose": "Cap ring and cast shadow for swimmers."
+      },
+      {
+        "name": "board-mounted",
+        "value": "0 18px 40px -18px rgb(0 0 0 / 0.7)",
+        "purpose": "Hero timing board."
+      },
+      {
+        "name": "board-results",
+        "value": "0 24px 48px -24px rgb(0 20 30 / 0.55)",
+        "purpose": "Results board on a wall surface."
+      },
+      {
+        "name": "sign",
+        "value": "0 2px 0 #c7d6d6, 0 22px 40px -24px rgb(0 30 40 / 0.45)",
+        "purpose": "Pool rules sign edge and drop."
+      },
+      {
+        "name": "button-cap",
+        "value": "0 2px 0 rgb(0 0 0 / 0.25), 0 10px 24px -10px rgb(255 210 63 / 0.6)",
+        "purpose": "Cap button lip and yellow under-glow; 0 1px 0 when pressed."
+      },
+      {
+        "name": "led-glow",
+        "value": "text-shadow: 0 0 10px rgb(255 176 0 / 0.45)",
+        "purpose": "Lit LED digits only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All state transitions and moving lane walls."
+      },
+      {
+        "name": "state",
+        "value": "160ms",
+        "purpose": "Button lift/press, arrow nudge, hover fills."
+      },
+      {
+        "name": "wall-move",
+        "value": "700ms",
+        "purpose": "A touchpad sliding when a piece is split."
+      },
+      {
+        "name": "split-flash",
+        "value": "1400ms",
+        "purpose": "How long both lanes stay Split Pink after a split."
+      },
+      {
+        "name": "pace-clock",
+        "value": "requestAnimationFrame, 1/120 s sub-steps",
+        "purpose": "One shared clock drives the whole heat; stops off-screen and in hidden tabs; holds the result 5 s, then re-runs."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "still frame at 16.4 s (fastdl) / 9.5 s (browser)",
+        "purpose": "Under prefers-reduced-motion the heat starts paused on a mid-race frame and transitions collapse to 0.01ms. Pause/Play is always offered."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone-sm",
+        "value": "480px"
+      },
+      {
+        "name": "sm",
+        "value": "560px"
+      },
+      {
+        "name": "hero-stack",
+        "value": "860px"
+      },
+      {
+        "name": "md",
+        "value": "900px"
+      },
+      {
+        "name": "short-laptop",
+        "value": "max-height: 800px"
+      },
+      {
+        "name": "short",
+        "value": "max-height: 700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Cap Button",
+      "kind": "button",
+      "refersTo": "button-cap",
+      "description": "The primary call to action: a yellow cap on dark water.",
+      "html": "<div class=\"ds-deck\"><a class=\"ds-btn ds-btn-cap\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3.5v12\"/><path d=\"m6.5 10.5 5.5 5.5 5.5-5.5\"/><path d=\"M4.5 20.5h15\"/></svg> Download for Windows</a></div>",
+      "css": ":host{--water:#27b0a8;--grout:rgb(255 255 255 / 0.2);--on-water:#07202b;--deck:#0b2230;--deck-2:#123444;--deck-line:#21495a;--on-deck:#eef7f6;--on-deck-soft:#a8d4cf;--wall:#f2f7f7;--wall-grout:#dce8e8;--on-wall:#0b2230;--on-wall-soft:#3d5a63;--rope:#e2323f;--rope-2:#fff;--cap:#ffd23f;--cap-ink:#0b2230;--split:#ff4f8b;--board:#05090b;--board-edge:#1b2328;--led:#ffb000;--led-soft:#c98b00;--focus:#ffd23f;--tile:24px;--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--body:\"Atkinson Hyperlegible Next\",\"Segoe UI\",system-ui,sans-serif;--digits:\"Doto\",ui-monospace,monospace;--ease-out:cubic-bezier(0.16,1,0.3,1)}.ds-deck{background:var(--deck);padding:24px}.ds-btn{display:inline-flex;align-items:center;gap:.6em;min-height:52px;padding:.7em 1.3em;font:800 1.35rem/1 var(--display);letter-spacing:.02em;text-transform:uppercase;text-decoration:none;border:2px solid transparent;border-radius:6px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 160ms,box-shadow 160ms}.ds-btn:focus-visible{outline:3px solid var(--focus);outline-offset:3px}.ds-btn-cap{background:var(--cap);color:var(--cap-ink);box-shadow:0 2px 0 rgb(0 0 0 / .25),0 10px 24px -10px rgb(255 210 63 / .6)}.ds-btn-cap:hover{transform:translateY(-1px);background:#ffdc66}.ds-btn-cap:active{transform:translateY(1px);box-shadow:0 1px 0 rgb(0 0 0 / .25)}"
+    },
+    {
+      "name": "Line Button",
+      "kind": "button",
+      "refersTo": "button-line",
+      "description": "Secondary download beside a cap button; takes the ink of its surface.",
+      "html": "<div class=\"ds-water ds-pad\"><a class=\"ds-btn ds-btn-line\" href=\"#\">Portable .zip · 2.4 MB</a></div>",
+      "css": ":host{--water:#27b0a8;--grout:rgb(255 255 255 / 0.2);--on-water:#07202b;--deck:#0b2230;--deck-2:#123444;--deck-line:#21495a;--on-deck:#eef7f6;--on-deck-soft:#a8d4cf;--wall:#f2f7f7;--wall-grout:#dce8e8;--on-wall:#0b2230;--on-wall-soft:#3d5a63;--rope:#e2323f;--rope-2:#fff;--cap:#ffd23f;--cap-ink:#0b2230;--split:#ff4f8b;--board:#05090b;--board-edge:#1b2328;--led:#ffb000;--led-soft:#c98b00;--focus:#ffd23f;--tile:24px;--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--body:\"Atkinson Hyperlegible Next\",\"Segoe UI\",system-ui,sans-serif;--digits:\"Doto\",ui-monospace,monospace;--ease-out:cubic-bezier(0.16,1,0.3,1)}.ds-water{background-color:var(--water);background-image:linear-gradient(var(--grout) 1px,transparent 1px),linear-gradient(90deg,var(--grout) 1px,transparent 1px);background-size:var(--tile) var(--tile);color:var(--on-water);font:400 1.0625rem/1.6 var(--body)}.ds-pad{padding:24px}.ds-btn{display:inline-flex;align-items:center;gap:.6em;min-height:52px;padding:.7em 1.3em;font:800 1.35rem/1 var(--display);letter-spacing:.02em;text-transform:uppercase;text-decoration:none;border:2px solid transparent;border-radius:6px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 160ms,box-shadow 160ms}.ds-btn:focus-visible{outline:3px solid var(--focus);outline-offset:3px}.ds-btn-line{border-color:currentColor;background:transparent;color:var(--on-water)}.ds-btn-line:hover{background:color-mix(in srgb,currentColor 10%,transparent)}"
+    },
+    {
+      "name": "Site Navigation",
+      "kind": "nav",
+      "refersTo": "nav-cta",
+      "description": "Deck band with the wordmark, text links and a yellow Download link.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-brand\" href=\"#\"><span class=\"ds-icon\"></span>fastdl</a><ul><li><a href=\"#\" aria-current=\"page\">Guide</a></li><li><a href=\"#\">GitHub</a></li><li><a class=\"ds-cta\" href=\"#\">Download</a></li></ul></nav>",
+      "css": ":host{--water:#27b0a8;--grout:rgb(255 255 255 / 0.2);--on-water:#07202b;--deck:#0b2230;--deck-2:#123444;--deck-line:#21495a;--on-deck:#eef7f6;--on-deck-soft:#a8d4cf;--wall:#f2f7f7;--wall-grout:#dce8e8;--on-wall:#0b2230;--on-wall-soft:#3d5a63;--rope:#e2323f;--rope-2:#fff;--cap:#ffd23f;--cap-ink:#0b2230;--split:#ff4f8b;--board:#05090b;--board-edge:#1b2328;--led:#ffb000;--led-soft:#c98b00;--focus:#ffd23f;--tile:24px;--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--body:\"Atkinson Hyperlegible Next\",\"Segoe UI\",system-ui,sans-serif;--digits:\"Doto\",ui-monospace,monospace;--ease-out:cubic-bezier(0.16,1,0.3,1)}.ds-nav{background:var(--deck);color:var(--on-deck);display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:72px;padding:0 24px;font-family:var(--body)}.ds-brand{display:inline-flex;align-items:center;gap:10px;font:800 1.9rem/1 var(--display);color:var(--on-deck);text-decoration:none}.ds-icon{width:34px;height:34px;border-radius:8px;background:#0d9488}.ds-nav ul{display:flex;gap:24px;list-style:none;margin:0;padding:0;align-items:center}.ds-nav ul a{text-decoration:none;font-weight:700;color:var(--on-deck-soft)}.ds-nav ul a:hover,.ds-nav ul a[aria-current=page]{color:var(--on-deck);text-decoration:underline}.ds-nav .ds-cta{color:var(--cap-ink);background:var(--cap);padding:8px 14px;border-radius:6px;font:800 1.05rem/1 var(--display);text-transform:uppercase;letter-spacing:.04em}.ds-nav .ds-cta:hover{color:var(--cap-ink);background:#ffdc66;text-decoration:none}.ds-nav a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}"
+    },
+    {
+      "name": "Timing Board",
+      "kind": "custom",
+      "refersTo": "timing-board",
+      "description": "Black LED board carrying race numbers, with the mode switch and pause control.",
+      "html": "<div class=\"ds-board\"><p class=\"ds-board-title\">Speed test replay</p><dl class=\"ds-rows\"><div><dt>Speed</dt><dd class=\"ds-led\">13<span class=\"ds-sep\">.</span>1</dd><dd>MB/s</dd></div><div><dt>Done</dt><dd class=\"ds-led\">250</dd><dd>of 250 MB</dd></div><div><dt>Time</dt><dd class=\"ds-led\">00<span class=\"ds-sep\">:</span>19<span class=\"ds-sep\">.</span>0</dd><dd>min:s</dd></div></dl><div class=\"ds-controls\"><div class=\"ds-switch\" role=\"radiogroup\" aria-label=\"Who downloads the file\"><button role=\"radio\" aria-checked=\"true\">fastdl · 8 lanes</button><button role=\"radio\" aria-checked=\"false\">Browser · 1 lane</button></div><button class=\"ds-play\">Pause</button></div></div>",
+      "css": ":host{--water:#27b0a8;--grout:rgb(255 255 255 / 0.2);--on-water:#07202b;--deck:#0b2230;--deck-2:#123444;--deck-line:#21495a;--on-deck:#eef7f6;--on-deck-soft:#a8d4cf;--wall:#f2f7f7;--wall-grout:#dce8e8;--on-wall:#0b2230;--on-wall-soft:#3d5a63;--rope:#e2323f;--rope-2:#fff;--cap:#ffd23f;--cap-ink:#0b2230;--split:#ff4f8b;--board:#05090b;--board-edge:#1b2328;--led:#ffb000;--led-soft:#c98b00;--focus:#ffd23f;--tile:24px;--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--body:\"Atkinson Hyperlegible Next\",\"Segoe UI\",system-ui,sans-serif;--digits:\"Doto\",ui-monospace,monospace;--ease-out:cubic-bezier(0.16,1,0.3,1)}.ds-board{background:var(--board);border:2px solid var(--board-edge);border-radius:8px;padding:14px 18px;color:var(--led);box-shadow:0 18px 40px -18px rgb(0 0 0 / .7);font-variant-numeric:tabular-nums;max-width:420px}.ds-board-title,.ds-rows dt,.ds-rows dd:not(.ds-led){font:600 .85rem/1 var(--display);letter-spacing:.13em;text-transform:uppercase;color:var(--led-soft);margin:0}.ds-rows{margin:12px 0 0;display:grid;grid-template-columns:.9fr 1fr 1.25fr;gap:0 16px;padding-bottom:12px;border-bottom:1px solid #1a2328}.ds-rows>div{display:grid;gap:6px}.ds-led{font:800 2rem/1 var(--digits);text-shadow:0 0 10px rgb(255 176 0 / .45);margin:0;white-space:nowrap}.ds-sep{font-family:var(--display);font-weight:800}.ds-controls{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}.ds-switch{display:flex;border:1px solid #2a3439;border-radius:6px;overflow:hidden}.ds-switch button,.ds-play{background:transparent;border:0;color:#d9c79a;cursor:pointer;font:600 1rem/1 var(--display);letter-spacing:.06em;text-transform:uppercase;padding:10px 12px;min-height:40px}.ds-switch button+button{border-left:1px solid #2a3439}.ds-switch button[aria-checked=true]{background:var(--led);color:var(--board)}.ds-switch button:hover:not([aria-checked=true]),.ds-play:hover{background:#141c20}.ds-play{border:1px solid #2a3439;border-radius:6px;margin-left:auto}.ds-board button:focus-visible{outline:3px solid var(--focus);outline-offset:3px}"
+    },
+    {
+      "name": "Feature Lane",
+      "kind": "card",
+      "refersTo": "lane-block",
+      "description": "A numbered lane on tiled water: deck block with yellow edge, title, text, ropes between lanes.",
+      "html": "<div class=\"ds-water\"><div class=\"ds-rope\"></div><div class=\"ds-row\"><span class=\"ds-block\">2</span><h3>Pause and resume</h3><p>Stop a download and pick it up later, even after restarting your PC, when the server supports it.</p></div><div class=\"ds-rope ds-alt\"></div></div>",
+      "css": ":host{--water:#27b0a8;--grout:rgb(255 255 255 / 0.2);--on-water:#07202b;--deck:#0b2230;--deck-2:#123444;--deck-line:#21495a;--on-deck:#eef7f6;--on-deck-soft:#a8d4cf;--wall:#f2f7f7;--wall-grout:#dce8e8;--on-wall:#0b2230;--on-wall-soft:#3d5a63;--rope:#e2323f;--rope-2:#fff;--cap:#ffd23f;--cap-ink:#0b2230;--split:#ff4f8b;--board:#05090b;--board-edge:#1b2328;--led:#ffb000;--led-soft:#c98b00;--focus:#ffd23f;--tile:24px;--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--body:\"Atkinson Hyperlegible Next\",\"Segoe UI\",system-ui,sans-serif;--digits:\"Doto\",ui-monospace,monospace;--ease-out:cubic-bezier(0.16,1,0.3,1)}.ds-water{background-color:var(--water);background-image:linear-gradient(var(--grout) 1px,transparent 1px),linear-gradient(90deg,var(--grout) 1px,transparent 1px);background-size:var(--tile) var(--tile);color:var(--on-water);font:400 1.0625rem/1.6 var(--body)}.ds-row{display:grid;grid-template-columns:64px minmax(0,4fr) minmax(0,6fr);gap:8px 32px;align-items:center;min-height:112px;padding-right:24px}.ds-block{align-self:stretch;display:grid;place-items:center;background:var(--deck-2);color:var(--on-deck);font:800 2.4rem/1 var(--display);border-right:5px solid var(--cap)}.ds-row h3{font:800 2rem/.95 var(--display);margin:0}.ds-row p{margin:0;max-width:62ch}.ds-rope{height:10px;border-radius:5px;box-shadow:0 2px 3px rgb(0 30 40 / .25);background:radial-gradient(circle at 50% 42%,rgb(255 255 255 / .55) 0 1.5px,transparent 2px) 0 0/14px 10px repeat-x,repeating-linear-gradient(90deg,var(--rope) 0 13px,transparent 13px 14px) 0 0/100% 10px}.ds-rope.ds-alt{background:radial-gradient(circle at 50% 42%,rgb(255 255 255 / .55) 0 1.5px,transparent 2px) 0 0/14px 10px repeat-x,repeating-linear-gradient(90deg,var(--rope) 0 13px,transparent 13px 14px,var(--rope-2) 14px 27px,transparent 27px 28px) 0 0/100% 10px}"
+    },
+    {
+      "name": "Pool Rules Sign",
+      "kind": "card",
+      "refersTo": "pool-sign",
+      "description": "Policy posted as a white sign with a rope-red header and red numerals.",
+      "html": "<div class=\"ds-wall\"><div class=\"ds-sign\"><p class=\"ds-sign-head\">Pool rules</p><ol><li><strong>Eight connections by default.</strong> Many servers limit how many connections one person may open.</li><li><strong>Wait when asked to wait.</strong> When a server sends Retry-After, fastdl waits that long.</li></ol></div></div>",
+      "css": ":host{--water:#27b0a8;--grout:rgb(255 255 255 / 0.2);--on-water:#07202b;--deck:#0b2230;--deck-2:#123444;--deck-line:#21495a;--on-deck:#eef7f6;--on-deck-soft:#a8d4cf;--wall:#f2f7f7;--wall-grout:#dce8e8;--on-wall:#0b2230;--on-wall-soft:#3d5a63;--rope:#e2323f;--rope-2:#fff;--cap:#ffd23f;--cap-ink:#0b2230;--split:#ff4f8b;--board:#05090b;--board-edge:#1b2328;--led:#ffb000;--led-soft:#c98b00;--focus:#ffd23f;--tile:24px;--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--body:\"Atkinson Hyperlegible Next\",\"Segoe UI\",system-ui,sans-serif;--digits:\"Doto\",ui-monospace,monospace;--ease-out:cubic-bezier(0.16,1,0.3,1)}.ds-wall{background:var(--wall);padding:24px;font:400 1.0625rem/1.6 var(--body)}.ds-sign{background:#fff;color:#0b2230;border:3px solid #0b2230;border-radius:10px;overflow:hidden;box-shadow:0 2px 0 #c7d6d6,0 22px 40px -24px rgb(0 30 40 / .45)}.ds-sign-head{background:var(--rope);color:#fff;font:800 2.2rem/1 var(--display);letter-spacing:.1em;text-transform:uppercase;text-align:center;padding:14px 20px 12px;margin:0}.ds-sign ol{padding:22px 28px 26px 52px;margin:0;display:grid;gap:14px}.ds-sign li::marker{font:800 1.35rem var(--display);color:var(--rope)}.ds-sign strong{font-weight:700}"
+    },
+    {
+      "name": "Pairing Code Chips",
+      "kind": "chip",
+      "refersTo": "timing-board",
+      "description": "Small board chips showing the matching 4-digit pairing code.",
+      "html": "<div class=\"ds-deck\"><span class=\"ds-code\"><small>fastdl</small>4821</span><span class=\"ds-code\"><small>extension</small>4821</span></div>",
+      "css": ":host{--water:#27b0a8;--grout:rgb(255 255 255 / 0.2);--on-water:#07202b;--deck:#0b2230;--deck-2:#123444;--deck-line:#21495a;--on-deck:#eef7f6;--on-deck-soft:#a8d4cf;--wall:#f2f7f7;--wall-grout:#dce8e8;--on-wall:#0b2230;--on-wall-soft:#3d5a63;--rope:#e2323f;--rope-2:#fff;--cap:#ffd23f;--cap-ink:#0b2230;--split:#ff4f8b;--board:#05090b;--board-edge:#1b2328;--led:#ffb000;--led-soft:#c98b00;--focus:#ffd23f;--tile:24px;--display:\"Big Shoulders Display\",\"Arial Narrow\",sans-serif;--body:\"Atkinson Hyperlegible Next\",\"Segoe UI\",system-ui,sans-serif;--digits:\"Doto\",ui-monospace,monospace;--ease-out:cubic-bezier(0.16,1,0.3,1)}.ds-deck{background:var(--deck);padding:24px;display:flex;gap:12px}.ds-code{display:grid;gap:6px;background:var(--board);color:var(--led);border:2px solid var(--board-edge);border-radius:8px;padding:10px 14px;font:800 2rem/1 var(--digits);text-shadow:0 0 10px rgb(255 176 0 / .4);letter-spacing:.06em}.ds-code small{font:600 .8rem/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--led-soft);text-shadow:none}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Eight Lanes",
+    "overview": "The site is a competition pool seen from directly above. fastdl's eight connections are eight swim lanes racing one file to the wall, so the page is built from the pool's own materials: aqua tile water on a fixed grout grid for the big regions, a navy deck for headers and steps, plain pale wall surfaces behind long prose, red-and-white lane ropes where water begins, yellow touchpads and caps for everything you can press, and a black LED timing board for the numbers that matter. Nothing is decorated that a real pool would not have.\n\nThe density is that of a meet program: bold condensed headlines, short honest paragraphs, numbered lanes for features, a pool-rules sign for policy. The page alternates surfaces (deck, water, wall) section by section, the way you walk from the deck to the water's edge to the wall. At night (dark scheme) the pool keeps its shape and turns to underwater lights: dark teal water, near-black deck, dark tile walls. The timing board, the ropes, the caps and the sign do not change, because they are objects in the pool, not paint on it.\n\nMotion is one race. A single pace clock drives the hero heat; everything else stays still. With reduced motion the visitor sees a frozen frame part-way through the heat, never an empty pool.",
+    "keyCharacteristics": [
+      "Three surfaces only: water (tiled), deck (navy), wall (plain pale).",
+      "A fixed 24px tile module that never rescales.",
+      "Pool objects as UI: ropes as dividers, touchpads and caps as calls to action, a timing board for metrics, a sign for rules.",
+      "One reserved accent (pink) that means \"this lane is being split\" and nothing else.",
+      "Condensed sports display type over a highly legible text face; dot-matrix digits only on the board."
+    ],
+    "rules": [
+      {
+        "name": "The Reserved Pink Rule",
+        "body": "Split Pink appears only where a lane is being split. No links, badges, highlights or illustrations in pink, ever. If nothing is splitting, there is no pink on screen.",
+        "section": "colors"
+      },
+      {
+        "name": "The Numbers On The Board Rule",
+        "body": "Race metrics (speed, time, size done, measured results, pairing codes) are set in LED Amber on Timing Board Black. Numbers inside prose and the small per-lane speed tags stay in the body face.",
+        "section": "colors"
+      },
+      {
+        "name": "The Night Pool Rule",
+        "body": "The dark scheme swaps water, deck and wall for their -night values and keeps every pool object (board, ropes, caps, sign, split pink) unchanged.",
+        "section": "colors"
+      },
+      {
+        "name": "The Separator Swap Rule",
+        "body": "Doto draws \".\" like a plus sign, so every \".\" and \":\" inside LED digits is set in Big Shoulders Display 800. Any new board number must pass through the same separator swap.",
+        "section": "typography"
+      },
+      {
+        "name": "The Uppercase Belongs To The Display Face Rule",
+        "body": "Uppercase and wide tracking are used only in Big Shoulders (buttons, labels, sign header). Body text is never set in capitals.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fixed Tile Rule",
+        "body": "The water grout grid is a 24px tile at every viewport and scheme. Never scale it, animate it or change its pitch; content moves over the tile, the tile does not move.",
+        "section": "layout"
+      },
+      {
+        "name": "The Water Begins With A Rope Rule",
+        "body": "A water section that follows another surface opens with a 22px deck-colored edge and a red-and-white lane rope; the hero pool sits between two coping strips (22px grate).",
+        "section": "layout"
+      },
+      {
+        "name": "The Objects Float, Surfaces Don't Rule",
+        "body": "Shadows belong to pool objects (ropes, pads, caps, board, sign, cap button). Sections, text blocks and the app screenshot frame never get a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do build every new region from one of the three surfaces (water, deck, wall) and pair it with its own ink (on-water, on-deck, on-wall).",
+      "Do keep the water's grout grid at a fixed 24px tile.",
+      "Do open a water section with the deck edge and a lane rope, and separate stacked lane rows with ropes, alternating plain and red-and-white.",
+      "Do put race metrics on the Timing Board in Doto with the separator swap.",
+      "Do use Touchpad Yellow for the action the page wants, with navy text on it.",
+      "Do drive any live demonstration from one shared clock, offer a pause control, and show a still mid-race frame under reduced motion.",
+      "Do define both light and night values for any new surface token."
+    ],
+    "donts": [
+      "Don't use Split Pink for anything except a lane being split.",
+      "Don't set Doto outside the board, or let a \".\" or \":\" render in Doto.",
+      "Don't tile wall surfaces; walls stay plain so prose reads cleanly.",
+      "Don't put shadows on sections or text blocks; only pool objects cast them.",
+      "Don't run independent loops or decorative animation outside the race clock.",
+      "Don't set body text in uppercase or tracked capitals."
+    ]
+  }
+}
